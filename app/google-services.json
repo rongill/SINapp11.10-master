@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "840801889565",
+    "firebase_url": "https://social-indoor-navigation.firebaseio.com",
+    "project_id": "social-indoor-navigation",
+    "storage_bucket": "social-indoor-navigation.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:840801889565:android:d9d12cb6bfbce0cc",
+        "android_client_info": {
+          "package_name": "com.rongill.rsg.sinprojecttest"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "840801889565-v9do0kgjj0lt9p33237s1jbsvd2gleh4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.rongill.rsg.sinprojecttest",
+            "certificate_hash": "59f7bc09c7b3478fb8def10bf629c6b3ecd7f461"
+          }
+        },
+        {
+          "client_id": "840801889565-rpn7cr38kn2r92uhnjjn4qc3jhkegq9b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA-bGQx0S7zgZJaMJ5MPYBgmpqNFMud0nE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "840801889565-rpn7cr38kn2r92uhnjjn4qc3jhkegq9b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

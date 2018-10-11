@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">SINprojectTest</string>
+    <string name="title_activity_login">Sign in</string>
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password (optional)</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email
+        completions."
+    </string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="login_btn">Login or Sign-up</string>
+    <string name="forgot_password_click_here">Forgot password? Click here</string>
+    <string name="confirm_email">Confirm email</string>
+    <string name="sign_up">Sign up</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="nextBtn">Next</string>
+    <string name="sign_inTV">Sign-in</string>
+    <string name="your_name_profileET">Your Name</string>
+    <string name="profile_telephoneEThint">Telephone</string>
+    <string name="preferences_profile_CB_header">Preferences:</string>
+    <string name="profile_sportCB">sport</string>
+    <string name="profile_clothingCB">clothing</string>
+    <string name="profile_gadgetsCB">gadgets</string>
+    <string name="profile_foodCB">food</string>
+    <string name="profile_confirmBTN">Confirm your profile</string>
+    <string name="signout_menu_btn">Signout</string>
+</resources>
