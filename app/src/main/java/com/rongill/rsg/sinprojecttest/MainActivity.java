@@ -106,9 +106,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
         //init current user with cridatianls
-        String userID = mAuth.getCurrentUser().getUid();
-        DatabaseReference currentUserDB = FirebaseDatabase.getInstance().getReference().child("users").child(userID);
-        user = new User("ron", userID, new Point(0,0) );
+       // String userID = mAuth.getCurrentUser().getUid();
+        //DatabaseReference currentUserDB = FirebaseDatabase.getInstance().getReference().child("users").child(userID);
+       // user = new User("ron", userID, new Point(0,0) );
     }
 
 
