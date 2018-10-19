@@ -26,7 +26,8 @@
         </activity>
         <activity android:name=".SignInPages.LoginActivity" />
         <activity android:name=".SignInPages.SignupActivity" />
-        <activity android:name=".SignInPages.CreateUserPrifileActivity"></activity>
+        <activity android:name=".SignInPages.CreateUserPrifileActivity" />
+
     </application>
 
 </manifest>

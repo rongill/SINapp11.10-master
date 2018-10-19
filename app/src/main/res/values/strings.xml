@@ -31,4 +31,5 @@
     <string name="profile_foodCB">food</string>
     <string name="profile_confirmBTN">Confirm your profile</string>
     <string name="signout_menu_btn">Signout</string>
+    <string name="search_hint">Search here...</string>
 </resources>

@@ -1,12 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity"
-    android:orientation="vertical"
-    android:layout_gravity="center">
+    android:layout_gravity="center"
+    android:id="@+id/main_activity_layout">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        app:navigationIcon="@drawable/ic_action_navigation"
+        />
+    <LinearLayout
+        android:id="@+id/listview_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_below="@id/toolbar"
+        android:focusable="true"
+        >
+
+        <ListView
+            android:id="@+id/suggestion_layout_listview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#d89bcac6"/>
+    </LinearLayout>
 
 
 
@@ -16,10 +39,13 @@
         android:layout_height="192dp"
         android:layout_gravity="center"
         android:layout_marginTop="20dp"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
         app:srcCompat="@drawable/sinicon"
-        android:rotation="90"/>
+        android:rotation="90"
+        />
 
 
 
 
-</LinearLayout>
+</RelativeLayout>

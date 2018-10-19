@@ -1,5 +1,7 @@
 package com.rongill.rsg.sinprojecttest;
 
+import com.rongill.rsg.sinprojecttest.Navigation.Point;
+
 public class User {
 
     private String username;

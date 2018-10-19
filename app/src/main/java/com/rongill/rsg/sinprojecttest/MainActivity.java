@@ -6,22 +6,31 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.support.annotation.NonNull;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.animation.Animation;
-import android.view.animation.RotateAnimation;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.TextView;
+import android.widget.ListView;
+import android.support.v7.widget.SearchView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.rongill.rsg.sinprojecttest.Navigation.Compass;
+import com.rongill.rsg.sinprojecttest.Navigation.Point;
 import com.rongill.rsg.sinprojecttest.SignInPages.CreateUserPrifileActivity;
 import com.rongill.rsg.sinprojecttest.SignInPages.LoginActivity;
+
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -41,9 +50,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float currentAzimuth =0f;
     private SensorManager mSensorManager;
     private int oriantationNew;
+    private Compass compass;
+
+    private ListView suggestionsListView;
+    ArrayAdapter<String> suggestionsListViewAdapter;
+
 
     //
     private User user;
+
+    ViewGroup listViewLayout;
 
 
     @Override
@@ -51,9 +67,29 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+
+        listViewLayout = (ViewGroup)findViewById(R.id.listview_layout);
+
         compassImage = (ImageView)findViewById(R.id.compass_image);
+        //init sensor
+        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        compass = new Compass(compassImage, mSensorManager);
+
+        suggestionsListView = (ListView)findViewById(R.id.suggestion_layout_listview);
+        suggestionsListViewAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, new ArrayList<String>());
+        suggestionsListView.setAdapter(suggestionsListViewAdapter);
 
 
+
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                suggestionsListViewAdapter.clear();
+            }
+        });
 
         mAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mAuth.getCurrentUser();
@@ -67,12 +103,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         };
 
-        //init sensor
-        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+
+
         //init current user with cridatianls
         String userID = mAuth.getCurrentUser().getUid();
         DatabaseReference currentUserDB = FirebaseDatabase.getInstance().getReference().child("users").child(userID);
-        user = new User("ron", , new Point(0,0) );
+        user = new User("ron", userID, new Point(0,0) );
     }
 
 
@@ -81,6 +117,43 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_page_menu, menu);
+        MenuItem searchItem = menu.findItem(R.id.action_search);
+        SearchView searchView = (SearchView)MenuItemCompat.getActionView(searchItem);
+
+
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                ArrayList<String> tempList = new ArrayList<>();
+                ArrayList<String> locationData = new ArrayList<>(LocationData.getLocations());
+                Collections.sort(locationData);
+                if(!newText.isEmpty()) {
+                    for (String temp : locationData) {
+                        if (temp.toLowerCase().contains(newText.toLowerCase())) {
+                            tempList.add(temp);
+                        }
+
+                        suggestionsListViewAdapter.clear();
+                        suggestionsListViewAdapter.addAll(tempList);
+                        listViewLayout.bringToFront();
+                    }
+                }else{
+                    suggestionsListViewAdapter.clear();
+                }
+
+
+                return true;
+            }
+        });
+
+
         return true;
 
     }
@@ -89,12 +162,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()){
+
             case R.id.sign_out_menu_btn:
                 signOut();
                 break;
             case R.id.profile_menu_btn:
                 startActivity(new Intent(this, CreateUserPrifileActivity.class));
-                finish();
+
         }
 
         return super.onOptionsItemSelected(item);
@@ -109,16 +183,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onPause() {
         super.onPause();
-        mSensorManager.unregisterListener((SensorEventListener)this);
+        compass.mSensorManager.unregisterListener((SensorEventListener)this);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        mSensorManager.registerListener((SensorEventListener) this, mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),SensorManager.SENSOR_DELAY_GAME);
-        mSensorManager.registerListener((SensorEventListener) this, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),SensorManager.SENSOR_DELAY_GAME);
-
-
+        compass.mSensorManager.registerListener((SensorEventListener) this, mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),SensorManager.SENSOR_DELAY_GAME);
+        compass.mSensorManager.registerListener((SensorEventListener) this, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),SensorManager.SENSOR_DELAY_GAME);
     }
 
     public void signOut(){
@@ -129,46 +201,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     @Override
-    public void onSensorChanged(SensorEvent sensorEvent) {
-        final float alpha = 0.97f;
-
-        synchronized (this){
-            if(sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER){
-                mGravity[0] = alpha*mGravity[0]+(1-alpha)*sensorEvent.values[0];
-                mGravity[1] = alpha*mGravity[1]+(1-alpha)*sensorEvent.values[1];
-                mGravity[2] = alpha*mGravity[2]+(1-alpha)*sensorEvent.values[2];
-            }
-
-            if (sensorEvent.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD){
-                mGeomagnetic[0] = alpha*mGeomagnetic[0]+(1-alpha)*sensorEvent.values[0];
-                mGeomagnetic[1] = alpha*mGeomagnetic[1]+(1-alpha)*sensorEvent.values[1];
-                mGeomagnetic[2] = alpha*mGeomagnetic[2]+(1-alpha)*sensorEvent.values[2];
-            }
-
-            float R[] = new float[9];
-            float I[] = new float[9];
-            boolean success = SensorManager.getRotationMatrix(R, I, mGravity, mGeomagnetic);
-            if(success){
-                float orientation[] = new float[3];
-                SensorManager.getOrientation(R, orientation);
-                azimuth = (float) Math.toDegrees(orientation[0]) + oriantationNew;
-                azimuth = (azimuth+360)%360;//-offsetInt;
-
-                Animation anim = new RotateAnimation(-currentAzimuth,-azimuth,Animation.RELATIVE_TO_SELF,
-                        0.5f,Animation.RELATIVE_TO_SELF,0.5f);
-                currentAzimuth = azimuth;
-
-                anim.setDuration(500);
-                anim.setRepeatCount(0);
-                anim.setFillAfter(true);
-
-                compassImage.startAnimation(anim);
-            }
-        }
+    public void onSensorChanged(SensorEvent event) {
+        compass.onSensorChanged(event);
     }
 
     @Override
-    public void onAccuracyChanged(Sensor sensor, int i) {
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
     }
+
 }
