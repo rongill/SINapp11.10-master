@@ -143,6 +143,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
             @Override
             public boolean onQueryTextChange(String newText) {
                 ArrayList<String> tempList = new ArrayList<>();
+                //TODO 1.3 get the Location data from server and init to locationData ArrayList
                 ArrayList<String> locationData = new ArrayList<>(LocationData.getLocations());
                 Collections.sort(locationData);
                 if(!newText.isEmpty()) {
@@ -220,6 +221,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
     }
 
     private void getCurrentUserFriends() {
+        //TODO 1.1 get user profile from server
         // init a user with an arraylist of friends users.
 
         ArrayList<User> friends = new ArrayList<>();
@@ -239,4 +241,6 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
         friendsListViewAdapter = new FriendListAdapter(friends, getApplicationContext());
         friendsListView.setAdapter(friendsListViewAdapter);
     }
+
+
 }

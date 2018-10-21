@@ -13,6 +13,7 @@ import java.util.ArrayList;
 
 public class FriendListAdapter extends ArrayAdapter<User> {
 
+    //TODO 1.2 set on click for list Items with intent to friend page.
     private ArrayList<User> friends;
     private Context mContext;
 
