@@ -5,34 +5,38 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.support.annotation.NonNull;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.SearchView;
+import android.view.MenuInflater;
+import android.view.View;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.support.v7.widget.SearchView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.rongill.rsg.sinprojecttest.Navigation.Compass;
-import com.rongill.rsg.sinprojecttest.Navigation.Point;
 import com.rongill.rsg.sinprojecttest.SignInPages.CreateUserPrifileActivity;
 import com.rongill.rsg.sinprojecttest.SignInPages.LoginActivity;
 
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class MainActivity extends AppCompatActivity implements SensorEventListener {
+public class MainDrowerActivity extends AppCompatActivity implements SensorEventListener{
 
     //Firebase params
     private FirebaseAuth mAuth;
@@ -40,49 +44,37 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private FirebaseDatabase mFirebaseDatabase;
     private FirebaseAuth.AuthStateListener mAuthListener;
 
-    //compass imageview
-    private ImageView compassImage;
-
-    //Sensor params
-    private float[] mGravity = new float[3];
-    private float[] mGeomagnetic = new float[3];
-    private float azimuth =0f;
-    private float currentAzimuth =0f;
+    //compass anim params
     private SensorManager mSensorManager;
-    private int oriantationNew;
     private Compass compass;
 
-    private ListView suggestionsListView;
     ArrayAdapter<String> suggestionsListViewAdapter;
+    ViewGroup searchSuggestionsLayout;
 
-
-    //
-    private User user;
-
-    ViewGroup listViewLayout;
+    private User currentUser;
+    private ListView friendsListView;
+    private FriendListAdapter friendsListViewAdapter;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
+        setContentView(R.layout.activity_main_drower);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
-        listViewLayout = (ViewGroup)findViewById(R.id.listview_layout);
-
-        compassImage = (ImageView)findViewById(R.id.compass_image);
-        //init sensor
-        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        compass = new Compass(compassImage, mSensorManager);
-
-        suggestionsListView = (ListView)findViewById(R.id.suggestion_layout_listview);
-        suggestionsListViewAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, new ArrayList<String>());
+        searchSuggestionsLayout = (ViewGroup)findViewById(R.id.suggestion_layout);//in appbar main drower layout
+        //SearchView list and adapter.
+        ListView suggestionsListView = (ListView) findViewById(R.id.suggestion_layout_listview);
+        suggestionsListViewAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, new ArrayList<String>());
         suggestionsListView.setAdapter(suggestionsListViewAdapter);
 
+        //compass imageview
+        ImageView compassImage = (ImageView) findViewById(R.id.compass_image);
 
+        //init compass vars for nav
+        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        compass = new Compass(compassImage, mSensorManager);
 
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -91,26 +83,45 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+        // init firebase auth status listener.
         mAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mAuth.getCurrentUser();
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 if(firebaseAuth.getCurrentUser() == null){
-                    startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                    startActivity(new Intent(MainDrowerActivity.this, LoginActivity.class));
 
                 }
             }
         };
 
+// init a user with an arraylist of friends users.
+
+        getCurrentUserFriends();
 
 
-        //init current user with cridatianls
-       // String userID = mAuth.getCurrentUser().getUid();
-        //DatabaseReference currentUserDB = FirebaseDatabase.getInstance().getReference().child("users").child(userID);
-       // user = new User("ron", userID, new Point(0,0) );
+        //NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        //navigationView.setNavigationItemSelectedListener(this);
     }
 
+
+
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -142,7 +153,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                         suggestionsListViewAdapter.clear();
                         suggestionsListViewAdapter.addAll(tempList);
-                        listViewLayout.bringToFront();
+                        searchSuggestionsLayout.bringToFront();
                     }
                 }else{
                     suggestionsListViewAdapter.clear();
@@ -160,7 +171,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
         switch (item.getItemId()){
 
             case R.id.sign_out_menu_btn:
@@ -170,14 +180,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 startActivity(new Intent(this, CreateUserPrifileActivity.class));
 
         }
-
         return super.onOptionsItemSelected(item);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-       mAuth.addAuthStateListener((mAuthListener));
+        mAuth.addAuthStateListener((mAuthListener));
     }
 
     @Override
@@ -210,4 +219,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
+    private void getCurrentUserFriends() {
+        // init a user with an arraylist of friends users.
+
+        ArrayList<User> friends = new ArrayList<>();
+        User friend1 = new User("dave", true, null);
+        User friend2 = new User("mike", false, null);
+        User friend3 = new User("sean", true, null);
+        User friend4 = new User("ron", true, null);
+        User friend5 = new User("keren", true, null);
+        friends.add(friend1);
+        friends.add(friend2);
+        friends.add(friend3);
+        friends.add(friend4);
+        friends.add(friend5);
+
+        friendsListView = (ListView)findViewById(R.id.friend_listView);
+        currentUser = new User("moshe", true, friends);
+        friendsListViewAdapter = new FriendListAdapter(friends, getApplicationContext());
+        friendsListView.setAdapter(friendsListViewAdapter);
+    }
 }

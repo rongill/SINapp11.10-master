@@ -17,7 +17,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.rongill.rsg.sinprojecttest.MainActivity;
+import com.rongill.rsg.sinprojecttest.MainDrowerActivity;
 import com.rongill.rsg.sinprojecttest.R;
 
 import java.util.HashMap;
@@ -107,7 +107,7 @@ public class CreateUserPrifileActivity extends AppCompatActivity {
     private void updateUI(Boolean state){
         if(state){
             Toast.makeText(this, "Profile saved successfully", Toast.LENGTH_LONG).show();
-            startActivity(new Intent(this, MainActivity.class));
+            startActivity(new Intent(this, MainDrowerActivity.class));
             finish();
         } else {
             Toast.makeText(this, "something whent wrong..", Toast.LENGTH_LONG).show();

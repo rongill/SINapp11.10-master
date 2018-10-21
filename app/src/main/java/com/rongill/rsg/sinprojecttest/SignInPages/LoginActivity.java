@@ -17,7 +17,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.rongill.rsg.sinprojecttest.MainActivity;
+import com.rongill.rsg.sinprojecttest.MainDrowerActivity;
 import com.rongill.rsg.sinprojecttest.R;
 
 public class LoginActivity extends AppCompatActivity {
@@ -92,7 +92,8 @@ public class LoginActivity extends AppCompatActivity {
 
     private void updateUI(boolean state){
         if (state){
-            startActivity(new Intent(this, MainActivity.class));
+            startActivity(new Intent(this, MainDrowerActivity.class));
+            finish();
 
         }else{
             Toast.makeText(this, "Authentiacation failed",Toast.LENGTH_LONG).show();
