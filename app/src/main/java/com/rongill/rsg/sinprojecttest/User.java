@@ -1,40 +1,42 @@
 package com.rongill.rsg.sinprojecttest;
 
+import java.util.ArrayList;
+
 public class User {
 
-    private String username;
-    private String userID;
-    private Point coordinates;
+    private String userName;
+    private boolean status;
+    private ArrayList<User> friends;
 
-    public User(String username, String userID, Point userCurrentLocation){
-
-        this.username = username;
-        this.userID = userID;
-        coordinates = new Point(userCurrentLocation);
-
+    public String getUserName() {
+        return userName;
     }
 
-    public String getUsername() {
-        return username;
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
-    public String getUserID() {
-        return userID;
+    public boolean isConnected() {
+        return status;
     }
 
-    public Point getCoordiantes() {
-        return coordinates;
+    public void setStatus(boolean status) {
+        this.status = status;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public ArrayList<User> getFriends() {
+        return friends;
     }
 
-    public void setUserID(String userID) {
-        this.userID = userID;
+    public void setFriends(ArrayList<User> friends) {
+        this.friends = friends;
     }
 
-    public void setCoordiantes(Point coordinates) {
-        this.coordinates = coordinates;
+    public User(String userName, boolean isConnected, ArrayList<User> friends){
+        this.userName = userName;
+        this.status = isConnected;
+        this.friends = friends;
     }
+
+
 }

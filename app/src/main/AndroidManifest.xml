@@ -11,22 +11,28 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/sinicon"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".MainActivity">
+        tools:ignore="GoogleAppIndexingWarning"
+        >
+        <activity android:name=".signIn_pages.LoginActivity" />
+        <activity android:name=".signIn_pages.SignupActivity" />
+        <activity android:name=".signIn_pages.CreateUserPrifileActivity" />
+        <activity android:name=".FriendProfileActivity"/>
+        <activity
+            android:name=".MainDrowerActivity"
+            android:label="@string/title_activity_main_drower"
+            android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SignInPages.LoginActivity" />
-        <activity android:name=".SignInPages.SignupActivity" />
-        <activity android:name=".SignInPages.CreateUserPrifileActivity"></activity>
+
     </application>
 
 </manifest>

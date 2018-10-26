@@ -31,4 +31,12 @@
     <string name="profile_foodCB">food</string>
     <string name="profile_confirmBTN">Confirm your profile</string>
     <string name="signout_menu_btn">Signout</string>
+    <string name="search_hint">Search here...</string>
+    <string name="title_activity_main_drower">MainDrowerActivity</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
 </resources>
