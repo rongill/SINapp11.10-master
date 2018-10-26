@@ -1,4 +1,4 @@
-package com.rongill.rsg.sinprojecttest.Navigation;
+package com.rongill.rsg.sinprojecttest.navigation;
 
 public class Point {
     private int x;

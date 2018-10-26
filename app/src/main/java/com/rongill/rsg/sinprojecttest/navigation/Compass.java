@@ -1,6 +1,5 @@
-package com.rongill.rsg.sinprojecttest.Navigation;
+package com.rongill.rsg.sinprojecttest.navigation;
 
-import android.app.Activity;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -8,8 +7,6 @@ import android.hardware.SensorManager;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
-
-import static android.content.Context.SENSOR_SERVICE;
 
 public class Compass implements SensorEventListener {
 

@@ -7,13 +7,10 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.SearchView;
 import android.view.MenuInflater;
 import android.view.View;
-import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -22,6 +19,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -29,9 +27,9 @@ import android.widget.ListView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
-import com.rongill.rsg.sinprojecttest.Navigation.Compass;
-import com.rongill.rsg.sinprojecttest.SignInPages.CreateUserPrifileActivity;
-import com.rongill.rsg.sinprojecttest.SignInPages.LoginActivity;
+import com.rongill.rsg.sinprojecttest.navigation.Compass;
+import com.rongill.rsg.sinprojecttest.signIn_pages.CreateUserPrifileActivity;
+import com.rongill.rsg.sinprojecttest.signIn_pages.LoginActivity;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -71,7 +69,6 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
 
         //compass imageview
         ImageView compassImage = (ImageView) findViewById(R.id.compass_image);
-
         //init compass vars for nav
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         compass = new Compass(compassImage, mSensorManager);
@@ -240,6 +237,18 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
         currentUser = new User("moshe", true, friends);
         friendsListViewAdapter = new FriendListAdapter(friends, getApplicationContext());
         friendsListView.setAdapter(friendsListViewAdapter);
+
+        friendsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                int itemPosition = position;
+                User selectedFriend = (User)friendsListView.getItemAtPosition(position);
+                Intent intent = new Intent(getBaseContext(), FriendProfileActivity.class);
+                intent.putExtra("FRIEND_NAME", selectedFriend.getUserName());
+                intent.putExtra("CONNECTION_STATUS", selectedFriend.isConnected()?"connected":"disconnected");
+                startActivity(intent);
+            }
+        });
     }
 
 
