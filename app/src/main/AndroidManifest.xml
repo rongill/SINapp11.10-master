@@ -12,19 +12,17 @@
     <application
         android:allowBackup="true"
         android:icon="@drawable/sinicon"
-        android:label="@string/app_name"
+        android:label="SIN"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        tools:ignore="GoogleAppIndexingWarning"
-        >
+        tools:ignore="GoogleAppIndexingWarning">
         <activity android:name=".signIn_pages.LoginActivity" />
         <activity android:name=".signIn_pages.SignupActivity" />
         <activity android:name=".signIn_pages.CreateUserPrifileActivity" />
-        <activity android:name=".FriendProfileActivity"/>
+        <activity android:name=".FriendProfileActivity" />
         <activity
             android:name=".MainDrowerActivity"
-            android:label="@string/title_activity_main_drower"
             android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -32,7 +30,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
+        <activity android:name=".LocationInfoPage"></activity>
     </application>
 
 </manifest>

@@ -18,16 +18,17 @@ public class FriendProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friend_profile);
 
-        ImageView avatarImageView = (ImageView)findViewById(R.id.avatar_imageView);
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.avatar);
-        RoundedBitmapDrawable roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(getResources(),bitmap);
-        roundedBitmapDrawable.setCircular(true);
-        avatarImageView.setImageDrawable(roundedBitmapDrawable);
+
+
         TextView friendName = (TextView)findViewById(R.id.friend_name);
         TextView connectionStatus = (TextView)findViewById(R.id.connection_status_textView);
-
         friendName.setText(getIntent().getStringExtra("FRIEND_NAME"));
         connectionStatus.setText(getIntent().getStringExtra("CONNECTION_STATUS"));
+
+        //TODO get friend info from DB(User object + picture uri)
+        //give the friend image a rounded border/
+        setRoundedImage();
+
 
     }
     public void actionPressed(View v) {
@@ -42,5 +43,14 @@ public class FriendProfileActivity extends AppCompatActivity {
                 Toast.makeText(this, "Location sent to friend", Toast.LENGTH_SHORT).show();
                 break;
         }
+    }
+
+    public void setRoundedImage(){
+        ImageView avatarImageView = (ImageView)findViewById(R.id.avatar_imageView);
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.avatar);
+        RoundedBitmapDrawable roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(getResources(),bitmap);
+        roundedBitmapDrawable.setCircular(true);
+        avatarImageView.setImageDrawable(roundedBitmapDrawable);
+
     }
 }
