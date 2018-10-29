@@ -19,5 +19,14 @@
         app:srcCompat="@drawable/sinicon"
         android:rotation="90"
         />
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/structure_page_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:src="@drawable/ic_structure_icon"
+        android:layout_margin="16dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"/>
 
 </RelativeLayout>

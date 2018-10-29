@@ -7,6 +7,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.SearchView;
 import android.view.MenuInflater;
@@ -58,21 +59,9 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_drower);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        searchSuggestionsLayout = (ViewGroup)findViewById(R.id.suggestion_layout);//in appbar main drower layout
-        //SearchView list and adapter.
-        ListView suggestionsListView = (ListView) findViewById(R.id.suggestion_layout_listview);
-        suggestionsListViewAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, new ArrayList<String>());
-        suggestionsListView.setAdapter(suggestionsListViewAdapter);
-
-        //compass imageview
-        ImageView compassImage = (ImageView) findViewById(R.id.compass_image);
-        //init compass vars for nav
-        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        compass = new Compass(compassImage, mSensorManager);
-
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -80,11 +69,31 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
             }
         });
 
+        //set drawer layout & toggles.
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
+
+        //FAB transfers to Structure info page.
+        FloatingActionButton structureFabButton = findViewById(R.id.structure_page_fab);
+        structureFabButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getBaseContext(), StructureInfoActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        //SearchView list and adapter vars, set onItemClick intent to transfer to location page.
+        setSearchListView();
+
+        //compass imageview
+        //init compass vars for nav
+        ImageView compassImage = (ImageView) findViewById(R.id.compass_image);
+        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        compass = new Compass(compassImage, mSensorManager);
 
         // init firebase auth status listener.
         mAuth = FirebaseAuth.getInstance();
@@ -99,16 +108,14 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
             }
         };
 
-// init a user with an arraylist of friends users.
-
-        getCurrentUserFriends();
+        // init a user with an arraylist of friends users
+        // init the adapter with Friend list and onclick transfer to friend profile page
+        setCurrentUserFriends();
 
 
         //NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         //navigationView.setNavigationItemSelectedListener(this);
     }
-
-
 
     @Override
     public void onBackPressed() {
@@ -128,8 +135,6 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
         MenuItem searchItem = menu.findItem(R.id.action_search);
         SearchView searchView = (SearchView)MenuItemCompat.getActionView(searchItem);
 
-
-
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -148,10 +153,10 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                         if (temp.toLowerCase().contains(newText.toLowerCase())) {
                             tempList.add(temp);
                         }
-
+                        searchSuggestionsLayout.bringToFront();
                         suggestionsListViewAdapter.clear();
                         suggestionsListViewAdapter.addAll(tempList);
-                        searchSuggestionsLayout.bringToFront();
+
                     }
                 }else{
                     suggestionsListViewAdapter.clear();
@@ -217,7 +222,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
 
     }
 
-    private void getCurrentUserFriends() {
+    private void setCurrentUserFriends() {
         //TODO 1.1 get user profile from server
         // init a user with an arraylist of friends users.
 
@@ -246,6 +251,23 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                 Intent intent = new Intent(getBaseContext(), FriendProfileActivity.class);
                 intent.putExtra("FRIEND_NAME", selectedFriend.getUserName());
                 intent.putExtra("CONNECTION_STATUS", selectedFriend.isConnected()?"connected":"disconnected");
+                startActivity(intent);
+            }
+        });
+    }
+
+    public void setSearchListView(){
+        searchSuggestionsLayout = (ViewGroup)findViewById(R.id.suggestion_layout);//in appbar main drower layout
+        final ListView suggestionsListView = (ListView) findViewById(R.id.suggestion_listview);
+        suggestionsListViewAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, new ArrayList<String>());
+        suggestionsListView.setAdapter(suggestionsListViewAdapter);
+        suggestionsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                //by clicking one of the searched location, will be transfered to the location page.
+                String locationName = (String)suggestionsListView.getItemAtPosition(position);
+                Intent intent = new Intent(getBaseContext(), LocationInfoPage.class);
+                intent.putExtra("LOCATION_NAME", locationName);
                 startActivity(intent);
             }
         });
