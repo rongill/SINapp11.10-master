@@ -7,6 +7,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.SearchView;
 import android.view.MenuInflater;
@@ -74,6 +75,16 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
+
+        //FAB transfers to Structure info page.
+        FloatingActionButton structureFabButton = findViewById(R.id.structure_page_fab);
+        structureFabButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getBaseContext(), StructureInfoActivity.class);
+                startActivity(intent);
+            }
+        });
 
         //SearchView list and adapter vars, set onItemClick intent to transfer to location page.
         setSearchListView();

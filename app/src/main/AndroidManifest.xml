@@ -30,7 +30,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".LocationInfoPage"></activity>
+        <activity android:name=".LocationInfoPage" />
+        <activity android:name=".StructureInfoActivity"></activity>
     </application>
 
 </manifest>
