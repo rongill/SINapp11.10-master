@@ -13,7 +13,6 @@ import java.util.ArrayList;
 
 public class FriendListAdapter extends ArrayAdapter<User> {
 
-    //TODO 1.2 set on click for list Items with intent to friend page.
     private ArrayList<User> friends;
     private Context mContext;
 
@@ -63,8 +62,8 @@ public class FriendListAdapter extends ArrayAdapter<User> {
             viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        if(friend.getUserName()!= null) viewHolder.friendName.setText(friend.getUserName());
-        if(friend.isConnected()){
+        if(friend.getUsername()!= null) viewHolder.friendName.setText(friend.getUsername());
+        if(friend.getStatus().equals("connected")){
             viewHolder.connectionStatus.setImageResource(R.drawable.friend_connected_icon);
         } else {
             viewHolder.connectionStatus.setImageResource(R.drawable.friend_disconnected_icon);

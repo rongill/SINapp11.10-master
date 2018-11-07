@@ -4,39 +4,44 @@ import java.util.ArrayList;
 
 public class User {
 
-    private String userName;
-    private boolean status;
-    private ArrayList<User> friends;
+    private String userId, status, userName;
 
-    public String getUserName() {
-        return userName;
-    }
 
-    public void setUserName(String userName) {
+    public User(){}
+
+    public User(String userId, String userName, String status){
+        this.userId = userId;
         this.userName = userName;
-    }
-
-    public boolean isConnected() {
-        return status;
-    }
-
-    public void setStatus(boolean status) {
         this.status = status;
     }
 
-    public ArrayList<User> getFriends() {
-        return friends;
+    public String getUserId() {
+        return userId;
     }
 
-    public void setFriends(ArrayList<User> friends) {
-        this.friends = friends;
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
-    public User(String userName, boolean isConnected, ArrayList<User> friends){
+    public String getUsername() {
+        return userName;
+    }
+
+    public void setUsername(String userName) {
         this.userName = userName;
-        this.status = isConnected;
-        this.friends = friends;
     }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+
+
+
 
 
 }

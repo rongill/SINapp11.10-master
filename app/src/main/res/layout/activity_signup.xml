@@ -48,12 +48,12 @@
             android:singleLine="true"
             />
         <EditText
-            android:id="@+id/confirm_email"
+            android:id="@+id/username"
             android:layout_width="fill_parent"
             android:layout_height="40dp"
             android:layout_marginTop="5dp"
             android:background="@drawable/border_style"
-            android:hint="@string/confirm_email"
+            android:hint="Your Name"
             android:inputType="textEmailAddress"
             android:padding="10dp"
             android:textSize="15sp"

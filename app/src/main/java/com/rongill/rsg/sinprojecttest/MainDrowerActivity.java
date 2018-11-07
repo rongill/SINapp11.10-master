@@ -1,5 +1,6 @@
 package com.rongill.rsg.sinprojecttest;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -7,8 +8,10 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.SearchView;
 import android.view.MenuInflater;
 import android.view.View;
@@ -22,37 +25,56 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.rongill.rsg.sinprojecttest.navigation.Compass;
 import com.rongill.rsg.sinprojecttest.signIn_pages.CreateUserPrifileActivity;
 import com.rongill.rsg.sinprojecttest.signIn_pages.LoginActivity;
+import com.rongill.rsg.sinprojecttest.signIn_pages.RequestMessage;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainDrowerActivity extends AppCompatActivity implements SensorEventListener{
 
-    //Firebase params
+    private final String TAG = "MainActivity";
+    //Firebase vars
     private FirebaseAuth mAuth;
     private FirebaseUser mFirebaseUser;
-    private FirebaseDatabase mFirebaseDatabase;
     private FirebaseAuth.AuthStateListener mAuthListener;
 
-    //compass anim params
+    //compass anim vars
     private SensorManager mSensorManager;
     private Compass compass;
 
+    //search suggestions vars
     ArrayAdapter<String> suggestionsListViewAdapter;
     ViewGroup searchSuggestionsLayout;
 
-    private User currentUser;
+    //friend data vars
+    private ArrayList <User> friendList;
     private ListView friendsListView;
     private FriendListAdapter friendsListViewAdapter;
+
+    //Inbox vars
+    //TODO consider replacing the array list of request messages with a paren class.
+    private ArrayList<RequestMessage> requestMessageList;
 
 
     @Override
@@ -90,7 +112,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
         setSearchListView();
 
         //compass imageview
-        //init compass vars for nav
+        //init compass vars for nav view
         ImageView compassImage = (ImageView) findViewById(R.id.compass_image);
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         compass = new Compass(compassImage, mSensorManager);
@@ -103,18 +125,25 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 if(firebaseAuth.getCurrentUser() == null){
                     startActivity(new Intent(MainDrowerActivity.this, LoginActivity.class));
-
-                }
+                }else{ setConnectionStatus(true); }
             }
         };
 
-        // init a user with an arraylist of friends users
-        // init the adapter with Friend list and onclick transfer to friend profile page
-        setCurrentUserFriends();
+        //inbox setup
+        requestMessageList = new ArrayList<>();
 
+        //friend data setup
+        friendList = new ArrayList<>();
+        friendsListView = (ListView)findViewById(R.id.friend_listView);
+        friendsListViewAdapter = new FriendListAdapter(friendList, getApplicationContext());
+        friendsListView.setAdapter(friendsListViewAdapter);
 
-        //NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        //navigationView.setNavigationItemSelectedListener(this);
+        //oncreate database methods, need to logged in to activate (excludes first time users or signed out users)
+        if(mAuth.getCurrentUser()!=null){
+            setConnectionStatus(true);
+            setCurrentUserFriends();
+            setUserInbox();
+        }
     }
 
     @Override
@@ -190,12 +219,14 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
     protected void onStart() {
         super.onStart();
         mAuth.addAuthStateListener((mAuthListener));
+        if(mAuth.getCurrentUser()!=null) setConnectionStatus(true);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         compass.mSensorManager.unregisterListener((SensorEventListener)this);
+        mAuth.addAuthStateListener((mAuthListener));
     }
 
     @Override
@@ -203,11 +234,26 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
         super.onResume();
         compass.mSensorManager.registerListener((SensorEventListener) this, mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),SensorManager.SENSOR_DELAY_GAME);
         compass.mSensorManager.registerListener((SensorEventListener) this, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),SensorManager.SENSOR_DELAY_GAME);
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if(mAuth.getCurrentUser()!=null) setConnectionStatus(false);
+    }
+
+    @Override
+    protected void onDestroy() {
+        if(mAuth.getCurrentUser()!=null) setConnectionStatus(false);
+        super.onDestroy();
     }
 
     public void signOut(){
-        mAuth.signOut();
+
         startActivity(new Intent(this, LoginActivity.class));
+        setConnectionStatus(false);
+        mAuth.signOut();
         finish();
 
     }
@@ -218,46 +264,76 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
     }
 
     @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    public void onAccuracyChanged(Sensor sensor, int accuracy){}
 
-    }
-
+    //getting the user friend list from the database and update the friendList ArrayList object. set to friendListViewAdapter
     private void setCurrentUserFriends() {
-        //TODO 1.1 get user profile from server
-        // init a user with an arraylist of friends users.
 
-        ArrayList<User> friends = new ArrayList<>();
-        User friend1 = new User("dave", true, null);
-        User friend2 = new User("mike", false, null);
-        User friend3 = new User("sean", true, null);
-        User friend4 = new User("ron", true, null);
-        User friend5 = new User("keren", true, null);
-        friends.add(friend1);
-        friends.add(friend2);
-        friends.add(friend3);
-        friends.add(friend4);
-        friends.add(friend5);
+        //Reference to the current user-friend structure.
+        DatabaseReference currentUserFriendsDb = FirebaseDatabase.getInstance().getReference()
+                .child("users-friends").child(mFirebaseUser.getUid());
 
-        friendsListView = (ListView)findViewById(R.id.friend_listView);
-        currentUser = new User("moshe", true, friends);
-        friendsListViewAdapter = new FriendListAdapter(friends, getApplicationContext());
-        friendsListView.setAdapter(friendsListViewAdapter);
+        //add listener to any changes in the users friend list, any change will result in a refresh of the friend listview.
+        currentUserFriendsDb.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                friendList.clear();
+                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                    String friendId = ds.getKey();
+                    addNewFriendByUid(friendId);
 
+                }
+                friendsListViewAdapter.clear();
+                friendsListViewAdapter.addAll(friendList);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        //on click listener to transfer to the friend profile page.
         friendsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                int itemPosition = position;
                 User selectedFriend = (User)friendsListView.getItemAtPosition(position);
                 Intent intent = new Intent(getBaseContext(), FriendProfileActivity.class);
-                intent.putExtra("FRIEND_NAME", selectedFriend.getUserName());
-                intent.putExtra("CONNECTION_STATUS", selectedFriend.isConnected()?"connected":"disconnected");
+                intent.putExtra("FRIEND_NAME", selectedFriend.getUsername());
+                intent.putExtra("CONNECTION_STATUS", selectedFriend.getStatus());
                 startActivity(intent);
             }
         });
     }
 
+    //method that receives a friend UID and gets the object from the user structure. adds to  the friend list object, and notify the change in the adapter.
+    private void addNewFriendByUid(final String friendId){
+
+        DatabaseReference mRef = FirebaseDatabase.getInstance().getReference().child("users").child(friendId);
+        mRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                User friendUser = new User();
+                friendUser.setUserId(friendId);
+                friendUser.setUsername(dataSnapshot.getValue(User.class).getUsername());
+                friendUser.setStatus(dataSnapshot.getValue(User.class).getStatus());
+                friendList.add(friendUser);
+                friendsListViewAdapter.notifyDataSetChanged();
+
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+    }
+
     public void setSearchListView(){
-        searchSuggestionsLayout = (ViewGroup)findViewById(R.id.suggestion_layout);//in appbar main drower layout
+        //search bar in appbar main drawer layout.
+        searchSuggestionsLayout = (ViewGroup)findViewById(R.id.suggestion_layout);
         final ListView suggestionsListView = (ListView) findViewById(R.id.suggestion_listview);
         suggestionsListViewAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, new ArrayList<String>());
         suggestionsListView.setAdapter(suggestionsListViewAdapter);
@@ -273,5 +349,170 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
         });
     }
 
+    //function too add a friend to user friend list in db by email.
+    public void inviteFriend(View v){
+       final String userId = mFirebaseUser.getUid();
+       final DatabaseReference mRef = FirebaseDatabase.getInstance().getReference()
+               .child("users");
+       final AlertDialog.Builder addFriendAD = new AlertDialog.Builder(this);
+       final EditText friendEmailInput = new EditText(this);
+       friendEmailInput.setText("");
+       addFriendAD.setView(friendEmailInput);
+       addFriendAD.setPositiveButton("Invite", new DialogInterface.OnClickListener() {
+           @Override
+           public void onClick(DialogInterface dialog, int which) {
+               Query query = mRef.orderByChild("email").equalTo(friendEmailInput.getText().toString());
+               query.addListenerForSingleValueEvent(new ValueEventListener() {
+                   @Override
+                   public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                       for(DataSnapshot ds : dataSnapshot.getChildren()){
+
+                           if(!checkIfFriendExist(ds.getKey())) {
+                               setRequestToFriend(ds.getKey(),"friendRequest");
+                           } else {
+                               Toast.makeText(getBaseContext(), "Friend allready in your list", Toast.LENGTH_SHORT).show();
+                           }
+                       }
+                   }
+
+                   @Override
+                   public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                   }
+               });
+           }
+       });
+
+       addFriendAD.setNegativeButton("close", null);
+       addFriendAD.show();
+
+
+    }
+    //change the connection status in database according to the status var.
+    private void setConnectionStatus(final boolean status){
+        if(mAuth != null) {
+            final DatabaseReference mUserRef = FirebaseDatabase.getInstance().getReference().child("users")
+                    .child(mFirebaseUser.getUid()).child("status");
+            if(status)
+                mUserRef.setValue("connected");
+            else mUserRef.setValue("disconnected");
+        }
+    }
+
+    //checks if friend in already in the friend list (before adding)
+    public boolean checkIfFriendExist(String userId){
+        for(User friend : friendList){
+            if(friend.getUserId().equals(userId)) return true;
+        }
+        return false;
+    }
+
+    //TODO redundent, remove the button also
+    public void refreshFriendList (View v){
+        setCurrentUserFriends();
+    }
+
+    //Buildes the users request inbox.
+    private void setUserInbox(){
+        DatabaseReference userInboxRef = FirebaseDatabase.getInstance().getReference().child("users-inbox").child(mFirebaseUser.getUid());
+        userInboxRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                RequestMessage tempInboxItem = dataSnapshot.getValue(RequestMessage.class);
+                requestMessageList.add(tempInboxItem);
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    //create a request in database (type: friend request, nav requset, poke ...)
+    private void setRequestToFriend(final String receiverUid, String requestType){
+
+        Map<String,String> newPost = new HashMap<>();
+        newPost.put("request-type",requestType);
+        newPost.put("request-status","false");
+
+        //get ref to the new request and set the values.
+        DatabaseReference mRef = FirebaseDatabase.getInstance().getReference()
+                .child("users-inbox").child(receiverUid);
+        mRef.child(mFirebaseUser.getUid()).setValue(newPost);
+
+        //reference to the request status, and add listener, when status is true, the request is confirmed.
+        DatabaseReference requestStatusRef = FirebaseDatabase.getInstance().getReference()
+                .child("users-inbox").child(receiverUid).child(mFirebaseUser.getUid()).child("request-status");
+        requestStatusRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.getValue().toString().equals("true")){
+                    addFriendInDatabase(receiverUid);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    //add new friend in the database with a connection status, set listener to the friend status fireld in user structure to be equal.
+    // any change in status of a friend will result a friend list refresh.
+    private void addFriendInDatabase(String friendUid){
+
+        final DatabaseReference userFriendsListRef = FirebaseDatabase.getInstance().getReference()
+                .child("users-friends").child(mFirebaseUser.getUid()).child(friendUid);
+
+        Map<String,String> newPost = new HashMap<>();
+        newPost.put("status","disconnected");
+
+        userFriendsListRef.setValue(newPost)
+                .addOnCompleteListener(MainDrowerActivity.this, new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(getBaseContext(), "Friend added to your list", Toast.LENGTH_SHORT).show();
+                        } else {
+                            //TODO figure how to handle an event where the email not found in firebase
+                        }
+                    }
+                });
+        //set a listener to the user structure of the friend status, when changed (connected/disconnected) will update the users friend structure.
+        DatabaseReference statusUpdaterRef = FirebaseDatabase.getInstance().getReference()
+                .child("users").child(friendUid).child("status");
+        statusUpdaterRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                userFriendsListRef.child("status").setValue(dataSnapshot.getValue());
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
 
 }
+
+

@@ -69,22 +69,15 @@ public class CreateUserPrifileActivity extends AppCompatActivity {
         if(mFirebaseAuth!=null) {
             userId = mFirebaseAuth.getCurrentUser().getUid();
             DatabaseReference currentUserDb = FirebaseDatabase.getInstance().getReference()
-                    .child("users").child(userId);
+                    .child("users-profile").child(userId);
 
-            Map newPost = new HashMap();
+            Map <String, String>newPost = new HashMap<>();
             newPost.put("username", nameET.getText().toString());
             newPost.put("age", ageET.getText().toString());
             newPost.put("telephone", telephoneET.getText().toString());
             newPost.put("gender", genderSpinner.getSelectedItem().toString());
+            newPost.put("email", mFirebaseAuth.getCurrentUser().getEmail());
 
-            // String preferences = "";
-
-            //  for(int i=0;i<4;i++){
-            //    if(cbArray[i].isSelected())
-            //         preferences+=cbArray[i].getText().toString() + " ";
-            //   }
-
-            //   newPost.put("preferences", preferences);
             currentUserDb.setValue(newPost).addOnCompleteListener(CreateUserPrifileActivity.this,
                     new OnCompleteListener<Void>() {
                         @Override
