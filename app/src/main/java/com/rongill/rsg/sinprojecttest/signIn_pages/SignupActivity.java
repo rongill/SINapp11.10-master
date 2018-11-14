@@ -80,6 +80,7 @@ public class SignupActivity extends AppCompatActivity {
             newPost.put("username", userNameET.getText().toString());
             newPost.put("email",emailET.getText().toString());
             newPost.put("status","connected");
+            newPost.put("user-type", "regular");
             mRef.setValue(newPost);
 
             startActivity(new Intent(this, CreateUserPrifileActivity.class));

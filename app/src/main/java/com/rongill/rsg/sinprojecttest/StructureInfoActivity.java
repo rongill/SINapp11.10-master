@@ -41,7 +41,8 @@ public class StructureInfoActivity extends AppCompatActivity {
         servicesListview = new ArrayList<>();
         favoriteListview = new ArrayList<>();
 
-        ArrayList<Location> locationArrayList = LocationData.getLocationsArrayList();
+        Intent intent = getIntent();
+        ArrayList<Location> locationArrayList = (ArrayList<Location>)intent.getSerializableExtra("LOCATION_LIST");
         //init ArrayLists to their category.
         for(int i = 0; i < locationArrayList.size(); i++){
             switch (locationArrayList.get(i).getCategory()){

@@ -4,15 +4,16 @@ import java.util.ArrayList;
 
 public class User {
 
-    private String userId, status, userName;
+    private String userId, status, userName, userType;
 
 
     public User(){}
 
-    public User(String userId, String userName, String status){
+    public User(String userId, String userName, String status, String userType){
         this.userId = userId;
         this.userName = userName;
         this.status = status;
+        this.userType = userType;
     }
 
     public String getUserId() {
@@ -39,6 +40,13 @@ public class User {
         this.status = status;
     }
 
+    public void setUserType(String userType){
+        this.userType = userType;
+    }
+
+    public String getUserType(){
+        return this.userType;
+    }
 
 
 

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp">
+    <TextView
+        android:id="@+id/location_name_item_listView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="location name"
+        android:textSize="30sp"
+
+        />
+    <TextView
+        android:id="@+id/location_category_item_listView"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/location_name_item_listView"
+        android:text="Category"
+        android:layout_alignStart="@+id/location_name_item_listView"
+        android:layout_marginTop="10dp"
+        />
+    <TextView
+        android:id="@+id/related_beacon_item_listView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/location_category_item_listView"
+        android:text="Beacon"
+        android:layout_alignStart="@+id/location_category_item_listView"
+        android:layout_marginTop="10dp"
+        />
+    <Button
+        android:id="@+id/remove_location_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/related_beacon_item_listView"
+        android:layout_marginTop="10dp"
+        android:layout_alignParentEnd="true"
+        android:text="remove"/>
+    <Button
+        android:id="@+id/modify_location_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/related_beacon_item_listView"
+        android:layout_marginTop="10dp"
+        android:layout_toStartOf="@+id/remove_location_button"
+        android:text="modify"
+        android:backgroundTint="@color/colorPrimary"/>
+
+
+
+</RelativeLayout>

@@ -27,16 +27,16 @@
         android:src="@drawable/ic_structure_icon"
         android:layout_margin="16dp"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"/>
-    <!--<Button
+        android:layout_alignParentEnd="true"/>
+    <Button
         android:id="@+id/test_button"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_toLeftOf="@id/structure_page_fab"
+        android:layout_toStartOf="@id/structure_page_fab"
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="15dp"
         android:background="#000000"
-        android:onClick="testFunction"
-        />-->
+        android:onClick="testInbox"
+        />
 
 </RelativeLayout>

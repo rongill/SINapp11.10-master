@@ -31,7 +31,14 @@
             </intent-filter>
         </activity>
         <activity android:name=".LocationInfoPage" />
-        <activity android:name=".StructureInfoActivity"></activity>
+        <activity android:name=".StructureInfoActivity" />
+        <activity
+            android:name=".InboxActivity"
+            android:theme="@style/AppTheme.WindowOverActivityPopupTheme" />
+        <activity android:name=".LocationSettingActivity"/>
+        <activity
+            android:name=".AddLocationActivity"
+            android:theme="@style/AppTheme.WindowOverActivityPopupTheme"/>
     </application>
 
 </manifest>

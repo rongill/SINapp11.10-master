@@ -1,9 +1,25 @@
 package com.rongill.rsg.sinprojecttest;
 
-public class Location {
+import java.io.Serializable;
 
-    private String name;
-    private String category;
+public class Location implements Serializable {
+
+
+    private String name, category, beacon;
+
+    public Location(){}
+
+    public Location(String name, String category, String beacon){
+        this.name = name;
+        this.category = category;
+        this.beacon = beacon;
+    }
+
+    public Location(Location other){
+        this.name = other.getName();
+        this.category = other.getCategory();
+        this.beacon = other.getBeacon();
+    }
 
     public String getName() {
         return name;
@@ -20,10 +36,12 @@ public class Location {
     public void setCategory(String category) {
         this.category = category;
     }
-    // Point in the structure
 
-    public Location(String name, String category) {
-        this.name = name;
-        this.category = category;
+    public String getBeacon() {
+        return beacon;
+    }
+
+    public void setBeacon(String beacon) {
+        this.beacon = beacon;
     }
 }

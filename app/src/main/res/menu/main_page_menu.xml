@@ -16,6 +16,10 @@
         android:id="@+id/sign_out_menu_btn"
         android:title="@string/signout_menu_btn"
         app:showAsAction="never"/>
+    <item android:id="@+id/maintenance_settings"
+        app:showAsAction="never"
+        android:title="maintenance"
+        android:visible="false"/>
 
 
 </menu>

@@ -13,6 +13,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
 import android.view.MenuInflater;
 import android.view.View;
 import android.support.v4.view.GravityCompat;
@@ -44,7 +45,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.rongill.rsg.sinprojecttest.navigation.Compass;
 import com.rongill.rsg.sinprojecttest.signIn_pages.CreateUserPrifileActivity;
 import com.rongill.rsg.sinprojecttest.signIn_pages.LoginActivity;
-import com.rongill.rsg.sinprojecttest.signIn_pages.RequestMessage;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -64,10 +64,12 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
     private Compass compass;
 
     //search suggestions vars
-    ArrayAdapter<String> suggestionsListViewAdapter;
-    ViewGroup searchSuggestionsLayout;
+    private ArrayAdapter<String> suggestionsListViewAdapter;
+    private ViewGroup searchSuggestionsLayout;
+    private ArrayList<Location> locationList;
 
     //friend data vars
+    private User currentUser;
     private ArrayList <User> friendList;
     private ListView friendsListView;
     private FriendListAdapter friendsListViewAdapter;
@@ -81,6 +83,19 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_drower);
+
+        // init firebase auth status listener.
+        mAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mAuth.getCurrentUser();
+        mAuthListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                if(firebaseAuth.getCurrentUser() == null){
+                    startActivity(new Intent(MainDrowerActivity.this, LoginActivity.class));
+                    finish();
+                }
+            }
+        };
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -96,6 +111,9 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
+
+        //TODO add the refresh functionality to this listener
+        //drawer.addDrawerListener(new DrawerLayout.DrawerListener() {});
         toggle.syncState();
 
         //FAB transfers to Structure info page.
@@ -104,6 +122,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getBaseContext(), StructureInfoActivity.class);
+                intent.putExtra("LOCATION_LIST", locationList);
                 startActivity(intent);
             }
         });
@@ -117,20 +136,12 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         compass = new Compass(compassImage, mSensorManager);
 
-        // init firebase auth status listener.
-        mAuth = FirebaseAuth.getInstance();
-        mFirebaseUser = mAuth.getCurrentUser();
-        mAuthListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                if(firebaseAuth.getCurrentUser() == null){
-                    startActivity(new Intent(MainDrowerActivity.this, LoginActivity.class));
-                }else{ setConnectionStatus(true); }
-            }
-        };
+
 
         //inbox setup
         requestMessageList = new ArrayList<>();
+
+
 
         //friend data setup
         friendList = new ArrayList<>();
@@ -142,8 +153,56 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
         if(mAuth.getCurrentUser()!=null){
             setConnectionStatus(true);
             setCurrentUserFriends();
+            currentUser = new User();
+            //setCurrentUserData();
             setUserInbox();
+            setLocationList();
         }
+    }
+
+    //TODO check is this works ok
+    private void setCurrentUserData(final MenuItem maintenanceItem) {
+        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference()
+                .child("users").child(mFirebaseUser.getUid());
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                currentUser.setUserId(dataSnapshot.getKey());
+                currentUser.setStatus("connected");
+                currentUser.setUsername(dataSnapshot.child("username").getValue().toString());
+                currentUser.setUserType(dataSnapshot.child("user-type").getValue().toString());
+                if(currentUser.getUserType().equals("maintenance"))
+                    maintenanceItem.setVisible(true);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    //TODO check if this fills the location list OK
+    private void setLocationList(){
+        locationList = new ArrayList<>();
+        DatabaseReference locationReference = FirebaseDatabase.getInstance().getReference()
+                .child("locations");
+        locationReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Location tempLocation;
+                locationList.clear();
+                for(DataSnapshot ds : dataSnapshot.getChildren()){
+                    tempLocation = ds.getValue(Location.class);
+                    locationList.add(tempLocation);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @Override
@@ -161,6 +220,13 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
 
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_page_menu, menu);
+
+        //set visible to the maintenance item if user is a maintenance user.
+        MenuItem maintenanceItem = menu.findItem(R.id.maintenance_settings);
+        if(currentUser!=null) {
+            setCurrentUserData(maintenanceItem);
+        }
+        // set the search item to be a searchView.
         MenuItem searchItem = menu.findItem(R.id.action_search);
         SearchView searchView = (SearchView)MenuItemCompat.getActionView(searchItem);
 
@@ -174,19 +240,17 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
             @Override
             public boolean onQueryTextChange(String newText) {
                 ArrayList<String> tempList = new ArrayList<>();
-                //TODO 1.3 get the Location data from server and init to locationData ArrayList
-                ArrayList<String> locationData = new ArrayList<>(LocationData.getLocations());
-                Collections.sort(locationData);
                 if(!newText.isEmpty()) {
-                    for (String temp : locationData) {
-                        if (temp.toLowerCase().contains(newText.toLowerCase())) {
-                            tempList.add(temp);
+                    for (Location temp : locationList) {
+                        if (temp.getName().toLowerCase().contains(newText.toLowerCase())) {
+                            tempList.add(temp.getName());
                         }
-                        searchSuggestionsLayout.bringToFront();
-                        suggestionsListViewAdapter.clear();
-                        suggestionsListViewAdapter.addAll(tempList);
-
                     }
+                    //TODO check if this works properly
+                    searchSuggestionsLayout.bringToFront();
+                    suggestionsListViewAdapter.clear();
+                    suggestionsListViewAdapter.addAll(tempList);
+
                 }else{
                     suggestionsListViewAdapter.clear();
                 }
@@ -210,6 +274,12 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                 break;
             case R.id.profile_menu_btn:
                 startActivity(new Intent(this, CreateUserPrifileActivity.class));
+                break;
+            case R.id.maintenance_settings:
+                Intent intent = new Intent(this, LocationSettingActivity.class );
+                intent.putExtra("LOCATION_LIST", locationList);
+                startActivity(intent);
+
 
         }
         return super.onOptionsItemSelected(item);
@@ -227,6 +297,9 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
         super.onPause();
         compass.mSensorManager.unregisterListener((SensorEventListener)this);
         mAuth.addAuthStateListener((mAuthListener));
+        if(isFinishing()) {
+            if (mAuth.getCurrentUser() != null) setConnectionStatus(false);
+        }
     }
 
     @Override
@@ -240,12 +313,12 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
     @Override
     protected void onStop() {
         super.onStop();
-        if(mAuth.getCurrentUser()!=null) setConnectionStatus(false);
+
     }
 
     @Override
     protected void onDestroy() {
-        if(mAuth.getCurrentUser()!=null) setConnectionStatus(false);
+
         super.onDestroy();
     }
 
@@ -265,6 +338,37 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy){}
+
+    //setting the search bar to the locationList var retrieved from DB earlier.
+    //setting on click for the search item to transfer to the location page.
+    public void setSearchListView(){
+        //search bar in appbar main drawer layout.
+        searchSuggestionsLayout = (ViewGroup)findViewById(R.id.suggestion_layout);
+        final ListView suggestionsListView = (ListView) findViewById(R.id.suggestion_listview);
+        suggestionsListViewAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, new ArrayList<String>());
+        suggestionsListView.setAdapter(suggestionsListViewAdapter);
+        suggestionsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                //by clicking one of the searched location, will be transfered to the location page.
+                String locationName = (String)suggestionsListView.getItemAtPosition(position);
+                Intent intent = new Intent(getBaseContext(), LocationInfoPage.class);
+                intent.putExtra("LOCATION_NAME", locationName);
+                startActivity(intent);
+            }
+        });
+    }
+
+    //change the connection status in database according to the status var.
+    private void setConnectionStatus(final boolean status){
+        if(mAuth != null) {
+            final DatabaseReference mUserRef = FirebaseDatabase.getInstance().getReference().child("users")
+                   .child(mFirebaseUser.getUid()).child("status");
+            if(status)
+                mUserRef.setValue("connected");
+            else mUserRef.setValue("disconnected");
+        }
+    }
 
     //getting the user friend list from the database and update the friendList ArrayList object. set to friendListViewAdapter
     private void setCurrentUserFriends() {
@@ -331,24 +435,6 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
 
     }
 
-    public void setSearchListView(){
-        //search bar in appbar main drawer layout.
-        searchSuggestionsLayout = (ViewGroup)findViewById(R.id.suggestion_layout);
-        final ListView suggestionsListView = (ListView) findViewById(R.id.suggestion_listview);
-        suggestionsListViewAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, new ArrayList<String>());
-        suggestionsListView.setAdapter(suggestionsListViewAdapter);
-        suggestionsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                //by clicking one of the searched location, will be transfered to the location page.
-                String locationName = (String)suggestionsListView.getItemAtPosition(position);
-                Intent intent = new Intent(getBaseContext(), LocationInfoPage.class);
-                intent.putExtra("LOCATION_NAME", locationName);
-                startActivity(intent);
-            }
-        });
-    }
-
     //function too add a friend to user friend list in db by email.
     public void inviteFriend(View v){
        final String userId = mFirebaseUser.getUid();
@@ -368,7 +454,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                        for(DataSnapshot ds : dataSnapshot.getChildren()){
 
                            if(!checkIfFriendExist(ds.getKey())) {
-                               setRequestToFriend(ds.getKey(),"friendRequest");
+                               setRequestToFriend(ds.getKey(),currentUser.getUsername(),"friend request");
                            } else {
                                Toast.makeText(getBaseContext(), "Friend allready in your list", Toast.LENGTH_SHORT).show();
                            }
@@ -388,16 +474,6 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
 
 
     }
-    //change the connection status in database according to the status var.
-    private void setConnectionStatus(final boolean status){
-        if(mAuth != null) {
-            final DatabaseReference mUserRef = FirebaseDatabase.getInstance().getReference().child("users")
-                    .child(mFirebaseUser.getUid()).child("status");
-            if(status)
-                mUserRef.setValue("connected");
-            else mUserRef.setValue("disconnected");
-        }
-    }
 
     //checks if friend in already in the friend list (before adding)
     public boolean checkIfFriendExist(String userId){
@@ -412,58 +488,37 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
         setCurrentUserFriends();
     }
 
-    //Buildes the users request inbox.
-    private void setUserInbox(){
-        DatabaseReference userInboxRef = FirebaseDatabase.getInstance().getReference().child("users-inbox").child(mFirebaseUser.getUid());
-        userInboxRef.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                RequestMessage tempInboxItem = dataSnapshot.getValue(RequestMessage.class);
-                requestMessageList.add(tempInboxItem);
-            }
-
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
-
     //create a request in database (type: friend request, nav requset, poke ...)
-    private void setRequestToFriend(final String receiverUid, String requestType){
+    private void setRequestToFriend(final String receiverUid, final String sendersUsername, final String requestType){
 
         Map<String,String> newPost = new HashMap<>();
         newPost.put("request-type",requestType);
-        newPost.put("request-status","false");
+        newPost.put("request-status","pending");
+        newPost.put("senders-username",sendersUsername );
 
         //get ref to the new request and set the values.
-        DatabaseReference mRef = FirebaseDatabase.getInstance().getReference()
-                .child("users-inbox").child(receiverUid);
-        mRef.child(mFirebaseUser.getUid()).setValue(newPost);
+        final DatabaseReference mRef = FirebaseDatabase.getInstance().getReference()
+                .child("users-inbox").child(receiverUid).child(mFirebaseUser.getUid());
+        mRef.setValue(newPost);
 
         //reference to the request status, and add listener, when status is true, the request is confirmed.
-        DatabaseReference requestStatusRef = FirebaseDatabase.getInstance().getReference()
+        final DatabaseReference requestStatusRef = FirebaseDatabase.getInstance().getReference()
                 .child("users-inbox").child(receiverUid).child(mFirebaseUser.getUid()).child("request-status");
         requestStatusRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.getValue().toString().equals("true")){
-                    addFriendInDatabase(receiverUid);
+                if(dataSnapshot.getValue()!=null) {
+                    if (dataSnapshot.getValue().toString().equals("confirmed")) {
+                        addFriendInDatabase(receiverUid);
+                        //TODO need to distroy the request in DB, result in crush at the other user side
+                        requestStatusRef.getParent().removeValue();
+
+                    } else if (dataSnapshot.getValue().toString().equals("denied")) {
+                        Toast.makeText(getBaseContext(), "Your " + requestType + "to " + currentUser.getUsername() + " was denied", Toast.LENGTH_LONG).show();
+                        mRef.removeValue();
+                    }
+                } else {
+                    Log.e("inbox listener","inbox record deleted");
                 }
             }
 
@@ -501,7 +556,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
         statusUpdaterRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                userFriendsListRef.child("status").setValue(dataSnapshot.getValue());
+                userFriendsListRef.child("status").setValue(dataSnapshot.getValue().toString());
             }
 
             @Override
@@ -511,6 +566,53 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
         });
 
     }
+
+    //Builds the users request inbox.
+    private void setUserInbox(){
+        DatabaseReference userInboxRef = FirebaseDatabase.getInstance().getReference()
+                .child("users-inbox").child(mFirebaseUser.getUid());
+        userInboxRef.addChildEventListener(new ChildEventListener() {
+
+            //immutable snapshot of the data at the new child location.
+            //when new inbox msg
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                RequestMessage tempInboxItem = new RequestMessage();
+                tempInboxItem.setFriendUid(dataSnapshot.getKey());
+                tempInboxItem.setSenderUsername(dataSnapshot.child("senders-username").getValue().toString());
+                tempInboxItem.setRequestType(dataSnapshot.child("request-type").getValue().toString());
+                tempInboxItem.setRequestStatus(false);
+                requestMessageList.add(tempInboxItem);
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+                requestMessageList.remove(dataSnapshot.getValue(RequestMessage.class));
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    public void testInbox(View v){
+        Intent intent = new Intent(this, InboxActivity.class);
+        intent.putExtra("MASSAGE_LIST",requestMessageList);
+        startActivity(intent);
+    }
+
 
 
 }
