@@ -51,7 +51,7 @@
 
         <LinearLayout
             android:onClick="actionPressed"
-            android:id="@+id/sayhiBtn"
+            android:id="@+id/poke_btn"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:background="@color/colorPrimary"
@@ -63,8 +63,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Say Hi"
-                android:textColor="#d1d1d1"
+                android:text="Poke"
+                android:textColor="#ffffff"
                 android:textSize="15sp"
 
                 />
@@ -84,7 +84,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Meet"
-                android:textColor="#d1d1d1"
+                android:textColor="#ffffff"
                 android:textSize="15sp"
 
                 />
@@ -104,7 +104,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Send Your Location"
-                android:textColor="#d1d1d1"
+                android:textColor="#ffffff"
                 android:textSize="15sp"
                 android:gravity="center"
 

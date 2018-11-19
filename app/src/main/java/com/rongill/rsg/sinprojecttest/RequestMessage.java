@@ -4,13 +4,16 @@ import java.io.Serializable;
 
 public class RequestMessage implements Serializable {
 
-    private String friendUid;
-    private String requestType;
-    private String senderUsername;
-    boolean requestStatus;
 
-    public RequestMessage(String friendUid, String requestType, String senderUsername, boolean requestStatus){
-        this.friendUid = friendUid;
+    private String receiverUid;
+    private String senderUid;
+    private String senderUsername;
+    private String requestType;
+    private String requestStatus;
+
+    public RequestMessage(String receiverUid, String senderUid, String senderUsername, String requestType, String requestStatus){
+        this.receiverUid = receiverUid;
+        this.senderUid = senderUid;
         this.senderUsername = senderUsername;
         this.requestType = requestType;
         this.requestStatus = requestStatus;
@@ -18,12 +21,20 @@ public class RequestMessage implements Serializable {
 
     public RequestMessage(){}
 
-    public String getFriendUid() {
-        return friendUid;
+    public String getReceiverUid() {
+        return receiverUid;
     }
 
-    public void setFriendUid(String friendUid) {
-        this.friendUid = friendUid;
+    public void setReceiverUid(String receiverUid) {
+        this.receiverUid = receiverUid;
+    }
+
+    public String getSenderUid() {
+        return senderUid;
+    }
+
+    public void setSenderUid(String senderUid) {
+        this.senderUid = senderUid;
     }
 
     public String getRequestType() {
@@ -34,11 +45,11 @@ public class RequestMessage implements Serializable {
         this.requestType = requestType;
     }
 
-    public boolean isRequestStatus() {
+    public String getRequestStatus() {
         return requestStatus;
     }
 
-    public void setRequestStatus(boolean requestStatus) {
+    public void setRequestStatus(String requestStatus) {
         this.requestStatus = requestStatus;
     }
 

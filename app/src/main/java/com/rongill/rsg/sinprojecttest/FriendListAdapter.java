@@ -2,6 +2,7 @@ package com.rongill.rsg.sinprojecttest;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,11 +10,20 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import java.util.ArrayList;
 
-public class FriendListAdapter extends ArrayAdapter<User> {
+public class FriendListAdapter extends ArrayAdapter<String> {
 
-    private ArrayList<User> friends;
+
+    private ArrayList<String> friendsUidList;
     private Context mContext;
 
     private static class ViewHolder{
@@ -21,20 +31,48 @@ public class FriendListAdapter extends ArrayAdapter<User> {
         TextView friendName;
     }
 
-    public FriendListAdapter(ArrayList<User> friends, Context context){
-        super(context, R.layout.friend_list_layout, friends);
-        this.friends = friends;
+    public FriendListAdapter(final ArrayList<String> friendsUidList, Context context, DatabaseReference userFriendsRef){
+        super(context, R.layout.friend_list_layout, friendsUidList);
+
+        userFriendsRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                friendsUidList.add(dataSnapshot.getValue().toString());
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        this.friendsUidList = friendsUidList;
         this.mContext = context;
     }
 
     @Override
     public int getCount() {
-        return friends.size();
+        return friendsUidList.size();
     }
 
     @Override
-    public User getItem(int position) {
-        return friends.get(position);
+    public String getItem(int position) {
+        return friendsUidList.get(position);
     }
 
     @Override
@@ -45,8 +83,8 @@ public class FriendListAdapter extends ArrayAdapter<User> {
     @NonNull
     @Override
     public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-        User friend = getItem(position);
-        ViewHolder viewHolder;
+        String friendUid = getItem(position);
+        final ViewHolder viewHolder;
 
 
         if (convertView == null){
@@ -62,13 +100,60 @@ public class FriendListAdapter extends ArrayAdapter<User> {
             viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        if(friend.getUsername()!= null) viewHolder.friendName.setText(friend.getUsername());
-        if(friend.getStatus().equals("connected")){
-            viewHolder.connectionStatus.setImageResource(R.drawable.friend_connected_icon);
-        } else {
-            viewHolder.connectionStatus.setImageResource(R.drawable.friend_disconnected_icon);
-        }
+        //if(friend.getUsername()!= null) viewHolder.friendName.setText(friend.getUsername());
+
+        DatabaseReference friendUserRefByUid = FirebaseDatabase.getInstance().getReference()
+                .child("users").child(friendUid).child("username");
+        friendUserRefByUid.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                viewHolder.friendName.setText(dataSnapshot.getValue().toString());
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+        DatabaseReference friendStatusRef = FirebaseDatabase.getInstance().getReference()
+                .child("users").child(friendsUidList.get(position)).child("status");
+        friendStatusRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                switch (dataSnapshot.getValue().toString()){
+                    case "connected":
+                        viewHolder.connectionStatus.setImageResource(R.drawable.friend_connected_icon);
+                        break;
+
+                    case "disconnected":
+                        viewHolder.connectionStatus.setImageResource(R.drawable.friend_disconnected_icon);
+                        break;
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+
+
+
 
         return convertView;
     }
+
+    public void myAddAll(ArrayList<String> friendsUidList){
+
+        for(String s:friendsUidList) {
+            super.add(s);
+        }
+
+    }
+
+
 }

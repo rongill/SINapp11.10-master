@@ -10,14 +10,38 @@
         android:layout_height="wrap_content"
         android:text="some Massage"
         />
+    <LinearLayout
+        android:id="@+id/poke_back_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/request_message_TV"
+        android:layout_marginTop="5dp"
+        android:visibility="invisible">
+
+        <Button
+            android:id="@+id/poke_back_btn"
+            android:layout_width="100dp"
+            android:layout_height="20dp"
+            android:background="#44bfbd"
+            android:text="Poke back"
+            android:textAllCaps="false"
+            android:textSize="12sp"
+
+            />
+
+    </LinearLayout>
 
 <LinearLayout
+    android:id="@+id/confirm_deny_inbox_layout"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:layout_below="@+id/request_message_TV"
     android:layout_centerHorizontal="true"
-    android:layout_marginTop="5dp">
+    android:layout_marginTop="5dp"
+    android:visibility="invisible">
         <Button
             android:id="@+id/confirm_request_btn"
             android:layout_width="50dp"
