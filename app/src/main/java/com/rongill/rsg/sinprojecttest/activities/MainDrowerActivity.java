@@ -91,6 +91,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
             }
         };
 
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -204,9 +205,9 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
         final MenuItem maintenanceItem = menu.findItem(R.id.maintenance_settings);
 
         //set the maintenance menu item visibility if user is a maintenance user.
-        if(mAuth!=null) {
+        if(mAuth.getCurrentUser()!=null) {
             DatabaseReference userRef = FirebaseDatabase.getInstance().getReference()
-                    .child("users").child(FirebaseAuth.getInstance().getUid()).child("user-type");
+                    .child("users").child(mAuth.getUid()).child("user-type");
             userRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -267,7 +268,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                 signOut();
                 break;
             case R.id.profile_menu_btn:
-                startActivity(new Intent(this, CreateUserPrifileActivity.class));
+                startActivity(new Intent(this, CreateUserProfileActivity.class));
                 break;
             case R.id.maintenance_settings:
                 Intent intent = new Intent(this, LocationSettingActivity.class );

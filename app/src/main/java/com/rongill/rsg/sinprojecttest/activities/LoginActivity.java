@@ -53,9 +53,6 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-
-
-
     public void loginOrSignup(String email, String password){
 
         if( !email.isEmpty() ){
@@ -113,9 +110,21 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if(!input.getText().toString().isEmpty()){
-                    //TODO send password reset email from Firebase SDK
-                    Toast.makeText(LoginActivity.this, "An email has been send to " + input.getText().toString(),
-                            Toast.LENGTH_LONG).show();
+                    mFirebaseAuth.sendPasswordResetEmail(input.getText().toString())
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if(task.isSuccessful()) {
+                                        Toast.makeText(LoginActivity.this, "An email has been send to " + input.getText().toString(),
+                                                Toast.LENGTH_LONG).show();
+                                    } else {
+                                        Toast.makeText(LoginActivity.this, "something whent wrong... try again.",
+                                                Toast.LENGTH_LONG).show();
+                                    }
+                                }
+                            });
+
+
                 }
             }
         });

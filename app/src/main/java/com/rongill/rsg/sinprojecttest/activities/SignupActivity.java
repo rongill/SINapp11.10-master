@@ -80,7 +80,7 @@ public class SignupActivity extends AppCompatActivity {
             newPost.put("user-type", "regular");
             mRef.setValue(newPost);
 
-            startActivity(new Intent(this, CreateUserPrifileActivity.class));
+            startActivity(new Intent(this, CreateUserProfileActivity.class));
             finish();
         }
         else{

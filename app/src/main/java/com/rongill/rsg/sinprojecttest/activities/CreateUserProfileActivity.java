@@ -22,7 +22,7 @@ import com.rongill.rsg.sinprojecttest.R;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CreateUserPrifileActivity extends AppCompatActivity {
+public class CreateUserProfileActivity extends AppCompatActivity {
 
     private static final String TAG = "CreateUserProfileActivity";
 
@@ -40,7 +40,7 @@ public class CreateUserPrifileActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_create_user_prifile);
+        setContentView(R.layout.activity_create_user_profile);
 
         //init editText fields
         nameET = (EditText)findViewById(R.id.profile_nameET);
@@ -77,7 +77,7 @@ public class CreateUserPrifileActivity extends AppCompatActivity {
             newPost.put("gender", genderSpinner.getSelectedItem().toString());
             newPost.put("email", mFirebaseAuth.getCurrentUser().getEmail());
 
-            currentUserDb.setValue(newPost).addOnCompleteListener(CreateUserPrifileActivity.this,
+            currentUserDb.setValue(newPost).addOnCompleteListener(CreateUserProfileActivity.this,
                     new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {

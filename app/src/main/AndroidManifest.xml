@@ -19,7 +19,7 @@
         tools:ignore="GoogleAppIndexingWarning">
         <activity android:name=".activities.LoginActivity" />
         <activity android:name=".activities.SignupActivity" />
-        <activity android:name=".activities.CreateUserPrifileActivity" />
+        <activity android:name=".activities.CreateUserProfileActivity" />
         <activity android:name=".activities.FriendProfileActivity" />
         <activity
             android:name=".activities.MainDrowerActivity"
