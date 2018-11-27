@@ -1,4 +1,4 @@
-package com.rongill.rsg.sinprojecttest;
+package com.rongill.rsg.sinprojecttest.activities;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -13,12 +13,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.rongill.rsg.sinprojecttest.R;
+import com.rongill.rsg.sinprojecttest.basic_objects.RequestMessage;
+import com.rongill.rsg.sinprojecttest.basic_objects.User;
 
 public class FriendProfileActivity extends AppCompatActivity {
 
@@ -34,7 +36,7 @@ public class FriendProfileActivity extends AppCompatActivity {
 
         friendName = (TextView)findViewById(R.id.friend_name);
         connectionStatus = (TextView)findViewById(R.id.connection_status_textView);
-        currentUser = new User();
+        //currentUser = new User();
 
         Intent intent = getIntent();
         currentUser = (User)intent.getSerializableExtra("CURRENT_USER");
@@ -46,6 +48,7 @@ public class FriendProfileActivity extends AppCompatActivity {
 
 
     }
+
     public void actionPressed(View v) {
         switch (v.getId()) {
             case R.id.poke_btn:
@@ -54,9 +57,11 @@ public class FriendProfileActivity extends AppCompatActivity {
 
                 break;
             case R.id.meetBtn:
+                //TODO send a navigation request to friend inbox
                 Toast.makeText(this, "meet request sent to friend", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.sendLocatonBtn:
+                //TODO send users current location to friend inbox
                 Toast.makeText(this, "Location sent to friend", Toast.LENGTH_SHORT).show();
                 break;
         }
@@ -71,6 +76,7 @@ public class FriendProfileActivity extends AppCompatActivity {
 
     }
 
+    //init friend obj from DB
     private void setFriendInfoFromDb(){
         Intent intent = getIntent();
         friend = new User();
@@ -93,7 +99,7 @@ public class FriendProfileActivity extends AppCompatActivity {
         });
     }
 
-
+    //send a RequestMassage to the friend with request type poke.
     private void sendPokeRequest(){
         RequestMessage message = new RequestMessage(friend.getUserId(), currentUser.getUserId(),currentUser.getUsername()
                 , "poke", "pending");

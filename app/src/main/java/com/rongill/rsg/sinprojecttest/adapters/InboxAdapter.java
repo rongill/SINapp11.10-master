@@ -1,4 +1,4 @@
-package com.rongill.rsg.sinprojecttest;
+package com.rongill.rsg.sinprojecttest.adapters;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -13,17 +13,16 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.rongill.rsg.sinprojecttest.R;
+import com.rongill.rsg.sinprojecttest.basic_objects.RequestMessage;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import static android.view.View.GONE;
 
@@ -161,7 +160,6 @@ public class InboxAdapter extends ArrayAdapter<RequestMessage> {
 
                         viewHolder.comfirmBtn.setVisibility(GONE);
                         viewHolder.denyBtn.setVisibility(GONE);
-                        //TODO make the text change when pressed, currently not changing, added notifyDataSetChanged, check if works
                         String confirmedText = "friend request from " + message.getSenderUsername() + " confirmed";
                         viewHolder.message.setText(confirmedText);
                         InboxAdapter.this.notifyDataSetChanged();

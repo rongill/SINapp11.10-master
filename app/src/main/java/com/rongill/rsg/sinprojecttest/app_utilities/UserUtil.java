@@ -1,4 +1,4 @@
-package com.rongill.rsg.sinprojecttest;
+package com.rongill.rsg.sinprojecttest.app_utilities;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -10,8 +10,8 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.rongill.rsg.sinprojecttest.basic_objects.User;
 
 import java.io.Serializable;
 
@@ -51,6 +51,7 @@ public class UserUtil implements Serializable {
         });
     }
 
+    //set the current users friend list
     private void updateFriendList(){
         DatabaseReference currentUserFriendsDb = FirebaseDatabase.getInstance().getReference()
                 .child("users-friends").child(mFirebaseUser.getUid());
@@ -110,7 +111,7 @@ public class UserUtil implements Serializable {
     }
 
     //set the friend status according to DB
-    public void addFriendStatusListener(final String friendId){
+    private void addFriendStatusListener(final String friendId){
         DatabaseReference friendStatusRef = FirebaseDatabase.getInstance().getReference()
                 .child("users").child(friendId).child("status");
         friendStatusRef.addValueEventListener(new ValueEventListener() {

@@ -1,4 +1,4 @@
-package com.rongill.rsg.sinprojecttest;
+package com.rongill.rsg.sinprojecttest.adapters;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -17,6 +17,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.rongill.rsg.sinprojecttest.R;
 
 import java.util.ArrayList;
 
@@ -38,6 +39,7 @@ public class FriendListAdapter extends ArrayAdapter<String> {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 friendsUidList.add(dataSnapshot.getValue().toString());
+                FriendListAdapter.this.notifyDataSetChanged();
             }
 
             @Override
@@ -100,8 +102,6 @@ public class FriendListAdapter extends ArrayAdapter<String> {
             viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        //if(friend.getUsername()!= null) viewHolder.friendName.setText(friend.getUsername());
-
         DatabaseReference friendUserRefByUid = FirebaseDatabase.getInstance().getReference()
                 .child("users").child(friendUid).child("username");
         friendUserRefByUid.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -115,7 +115,6 @@ public class FriendListAdapter extends ArrayAdapter<String> {
 
             }
         });
-
 
         DatabaseReference friendStatusRef = FirebaseDatabase.getInstance().getReference()
                 .child("users").child(friendsUidList.get(position)).child("status");
@@ -139,17 +138,12 @@ public class FriendListAdapter extends ArrayAdapter<String> {
             }
         });
 
-
-
-
-
-
         return convertView;
     }
 
     public void myAddAll(ArrayList<String> friendsUidList){
 
-        for(String s:friendsUidList) {
+        for(String s : friendsUidList) {
             super.add(s);
         }
 

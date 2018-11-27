@@ -1,4 +1,6 @@
-package com.rongill.rsg.sinprojecttest;
+package com.rongill.rsg.sinprojecttest.basic_objects;
+
+import com.rongill.rsg.sinprojecttest.navigation.MyBeacon;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -8,6 +10,7 @@ public class User implements Serializable {
 
     private String userId, status, userName, userType;
     private ArrayList<User> friends = new ArrayList<>();
+    private MyBeacon currentBeacon;
 
     public User(){}
 

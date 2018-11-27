@@ -1,18 +1,18 @@
-package com.rongill.rsg.sinprojecttest;
+package com.rongill.rsg.sinprojecttest.activities;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.rongill.rsg.sinprojecttest.adapters.InboxAdapter;
+import com.rongill.rsg.sinprojecttest.R;
+import com.rongill.rsg.sinprojecttest.basic_objects.RequestMessage;
 
 import java.util.ArrayList;
 

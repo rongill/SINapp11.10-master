@@ -1,10 +1,7 @@
-package com.rongill.rsg.sinprojecttest;
+package com.rongill.rsg.sinprojecttest.app_utilities;
 
 import android.support.annotation.NonNull;
-import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -13,10 +10,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.rongill.rsg.sinprojecttest.basic_objects.Inbox;
+import com.rongill.rsg.sinprojecttest.basic_objects.RequestMessage;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class InboxUtil {
 
@@ -30,16 +27,8 @@ public class InboxUtil {
         userInbox = new Inbox(new ArrayList<RequestMessage>(),inboxRef);
         mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         setInboxAndListener();
-        getActiveRequestsFromDb();
+        //getActiveRequestsFromDb();
 
-    }
-
-    public FirebaseUser getmFirebaseUser() {
-        return mFirebaseUser;
-    }
-
-    public void setmFirebaseUser(FirebaseUser mFirebaseUser) {
-        this.mFirebaseUser = mFirebaseUser;
     }
 
     public Inbox getUserInbox() {
@@ -52,10 +41,11 @@ public class InboxUtil {
 
     private void setInboxAndListener(){
 
-        userInbox.getInboxRef().child("").addValueEventListener(new ValueEventListener() {
+        userInbox.getInboxRef().addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(userInbox.getMessages()!=null)userInbox.getMessages().clear();
+                if(userInbox.getMessages()!=null)
+                    userInbox.getMessages().clear();
                 for(DataSnapshot ds : dataSnapshot.getChildren()){
                     RequestMessage tempMessage = new RequestMessage();
                     tempMessage.setReceiverUid(ds.getValue(RequestMessage.class).getReceiverUid());
@@ -85,6 +75,8 @@ public class InboxUtil {
         receiverInboxRef.push().setValue(message);
     }
 
+    //TODO no need for this method, for now
+    /*
     private void getActiveRequestsFromDb(){
         DatabaseReference usersInboxRef = FirebaseDatabase.getInstance().getReference()
                 .child("users-inbox");
@@ -108,5 +100,5 @@ public class InboxUtil {
 
             }
         });
-    }
+    }*/
 }

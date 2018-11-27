@@ -17,12 +17,12 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".signIn_pages.LoginActivity" />
-        <activity android:name=".signIn_pages.SignupActivity" />
-        <activity android:name=".signIn_pages.CreateUserPrifileActivity" />
-        <activity android:name=".FriendProfileActivity" />
+        <activity android:name=".activities.LoginActivity" />
+        <activity android:name=".activities.SignupActivity" />
+        <activity android:name=".activities.CreateUserPrifileActivity" />
+        <activity android:name=".activities.FriendProfileActivity" />
         <activity
-            android:name=".MainDrowerActivity"
+            android:name=".activities.MainDrowerActivity"
             android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -30,14 +30,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".LocationInfoPage" />
-        <activity android:name=".StructureInfoActivity" />
+        <activity android:name=".activities.LocationInfoPage" />
+        <activity android:name=".activities.StructureInfoActivity" />
         <activity
-            android:name=".InboxActivity"
+            android:name=".activities.InboxActivity"
             android:theme="@style/AppTheme.WindowOverActivityPopupTheme" />
-        <activity android:name=".LocationSettingActivity"/>
+        <activity android:name=".activities.LocationSettingActivity"/>
         <activity
-            android:name=".AddLocationActivity"
+            android:name=".activities.AddModifyLocationActivity"
             android:theme="@style/AppTheme.WindowOverActivityPopupTheme"/>
     </application>
 

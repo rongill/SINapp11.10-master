@@ -1,4 +1,4 @@
-package com.rongill.rsg.sinprojecttest;
+package com.rongill.rsg.sinprojecttest.basic_objects;
 
 import java.io.Serializable;
 

@@ -1,4 +1,4 @@
-package com.rongill.rsg.sinprojecttest;
+package com.rongill.rsg.sinprojecttest.activities;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -8,12 +8,10 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.SearchView;
-import android.util.Log;
 import android.view.MenuInflater;
 import android.view.View;
 import android.support.v4.view.GravityCompat;
@@ -33,20 +31,21 @@ import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.rongill.rsg.sinprojecttest.adapters.FriendListAdapter;
+import com.rongill.rsg.sinprojecttest.app_utilities.InboxUtil;
+import com.rongill.rsg.sinprojecttest.navigation.Location;
+import com.rongill.rsg.sinprojecttest.R;
+import com.rongill.rsg.sinprojecttest.basic_objects.RequestMessage;
+import com.rongill.rsg.sinprojecttest.app_utilities.UserUtil;
 import com.rongill.rsg.sinprojecttest.navigation.Compass;
-import com.rongill.rsg.sinprojecttest.signIn_pages.CreateUserPrifileActivity;
-import com.rongill.rsg.sinprojecttest.signIn_pages.LoginActivity;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class MainDrowerActivity extends AppCompatActivity implements SensorEventListener{
 
@@ -122,6 +121,20 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
             }
         });
 
+        FloatingActionButton inboxFabButton = findViewById(R.id.inbox_fab);
+        inboxFabButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mInboxUtil!=null) {
+                    Intent intent = new Intent(getBaseContext(), InboxActivity.class);
+                    intent.putExtra("MESSAGES", mInboxUtil.getUserInbox().getMessages());
+                    startActivity(intent);
+                }
+
+
+            }
+        });
+
         //SearchView list and adapter vars, set onItemClick intent to transfer to location page.
         setSearchListView();
 
@@ -149,7 +162,6 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
         }
     }
 
-    //TODO check if this fills the location list OK
     private void setLocationList(){
         locationList = new ArrayList<>();
         DatabaseReference locationReference = FirebaseDatabase.getInstance().getReference()
@@ -229,7 +241,6 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                             tempList.add(temp.getName());
                         }
                     }
-                    //TODO check if this works properly
                     searchSuggestionsLayout.bringToFront();
                     suggestionsListViewAdapter.clear();
                     suggestionsListViewAdapter.addAll(tempList);
@@ -341,7 +352,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
     }
 
     //change the connection status in database according to the status var.
-    //TODO figure out how to disconnect the user when app os closed.
+    //TODO figure out how to disconnect the user when app is closed.
     private void setConnectionStatus(boolean status){
         if(mAuth != null) {
             DatabaseReference mUserRef = FirebaseDatabase.getInstance().getReference().child("users")
@@ -406,7 +417,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                               mInboxUtil.sendRequest(message);
 
                            } else {
-                               Toast.makeText(getBaseContext(), "Friend allready in your list", Toast.LENGTH_SHORT).show();
+                               Toast.makeText(getBaseContext(), "Friend already in your list", Toast.LENGTH_SHORT).show();
                            }
                        }
                    }
@@ -434,14 +445,6 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
 
     }
 
-    public void testInbox(View v){
-        Intent intent = new Intent(this, InboxActivity.class);
-        ArrayList<RequestMessage> messages = mInboxUtil.getUserInbox().getMessages();
-
-        intent.putExtra("MESSAGES",messages);
-
-        startActivity(intent);
-    }
 
 
 
