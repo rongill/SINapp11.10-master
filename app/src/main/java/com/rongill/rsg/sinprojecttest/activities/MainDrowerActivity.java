@@ -1,17 +1,31 @@
 package com.rongill.rsg.sinprojecttest.activities;
 
+import android.Manifest;
+import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
 import android.view.MenuInflater;
 import android.view.View;
 import android.support.v4.view.GravityCompat;
@@ -27,10 +41,12 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -44,12 +60,17 @@ import com.rongill.rsg.sinprojecttest.R;
 import com.rongill.rsg.sinprojecttest.basic_objects.RequestMessage;
 import com.rongill.rsg.sinprojecttest.app_utilities.UserUtil;
 import com.rongill.rsg.sinprojecttest.navigation.Compass;
+import com.rongill.rsg.sinprojecttest.navigation.MyBeacon;
+import com.rongill.rsg.sinprojecttest.navigation.Point;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainDrowerActivity extends AppCompatActivity implements SensorEventListener{
 
     private final String TAG = "MainActivity";
+    private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
+    private static final int PERMISSION_REQUEST_COARSE_BL = 2;
     //Firebase vars
     private FirebaseAuth mAuth;
     private FirebaseUser mFirebaseUser;
@@ -64,15 +85,21 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
     private ViewGroup searchSuggestionsLayout;
     private ArrayList<Location> locationList;
 
-    //friend data vars
+    //user and friends data vars
     private UserUtil mUserUtil;
-
     private ListView friendsListView;
     private FriendListAdapter friendsListViewAdapter;
 
     //user Inbox vars
     private InboxUtil mInboxUtil;
 
+    //bluetooth vars
+    private BluetoothAdapter mBluetoothAdapter;
+    private BluetoothLeScanner scanner;
+    private ScanSettings scanSettings;
+    private List<MyBeacon> scannedDeivcesList;
+
+    //TODO !!! how to stop the app when minimized!!! need this for stop scanning or deferent scanning, and for signout method.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -128,7 +155,6 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
             public void onClick(View v) {
                 if(mInboxUtil!=null) {
                     Intent intent = new Intent(getBaseContext(), InboxActivity.class);
-                    intent.putExtra("MESSAGES", mInboxUtil.getUserInbox().getMessages());
                     startActivity(intent);
                 }
 
@@ -136,54 +162,55 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
             }
         });
 
-        //SearchView list and adapter vars, set onItemClick intent to transfer to location page.
-        setSearchListView();
-
         //compass imageview
         //init compass vars for nav view
         ImageView compassImage = (ImageView) findViewById(R.id.compass_image);
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         compass = new Compass(compassImage, mSensorManager);
 
+
+
         if(mAuth.getCurrentUser()!=null){
 
-            setConnectionStatus(true);
             mUserUtil = new UserUtil();
 
-            DatabaseReference userFriendListRef = FirebaseDatabase.getInstance().getReference()
-                    .child("users-friends").child(mFirebaseUser.getUid());
-
-            friendsListView = (ListView)findViewById(R.id.friend_listView);
-
-            friendsListViewAdapter = new FriendListAdapter(new ArrayList<String>(), getApplicationContext(), userFriendListRef);
-            friendsListView.setAdapter(friendsListViewAdapter);
-            refreshFriendAdapter();
+            setConnectionStatus(true);
+            setSearchListView();
+            setFriendAdapter();
             setUserInbox();
             setLocationList();
+
+            setBluetooth();
+            scannedDeivcesList = new ArrayList<>();
+            //start the scan
+            initLeScan(true);
+
+
+            final TextView userLocationTv = (TextView)findViewById(R.id.user_location_TV);
+            userLocationTv.setText("detecting...");
+
+            //init a handler to execute after 5sec the stopLeScan Runnable obj.
+            Handler mHandler = new Handler();
+            Runnable stopLeScanThread = new Runnable(){
+                @Override
+                public void run() {
+                    initLeScan(false);
+
+                    if(scannedDeivcesList.size()>0){
+                        mUserUtil.getCurrentUser().setCurrentBeacon(findClosestBeacon());
+                        userLocationTv.setText(mUserUtil.getCurrentUser().getCurrentBeacon().getName());
+                    } else {
+                        userLocationTv.setText("Unknown Location");
+                    }
+
+                }
+            };
+            mHandler.postDelayed(stopLeScanThread, 5000);
+            //mHandler.removeCallbacks(leScanThread);
         }
     }
 
-    private void setLocationList(){
-        locationList = new ArrayList<>();
-        DatabaseReference locationReference = FirebaseDatabase.getInstance().getReference()
-                .child("locations");
-        locationReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Location tempLocation;
-                locationList.clear();
-                for(DataSnapshot ds : dataSnapshot.getChildren()){
-                    tempLocation = ds.getValue(Location.class);
-                    locationList.add(tempLocation);
-                }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
 
     @Override
     public void onBackPressed() {
@@ -245,9 +272,11 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                     searchSuggestionsLayout.bringToFront();
                     suggestionsListViewAdapter.clear();
                     suggestionsListViewAdapter.addAll(tempList);
+                    suggestionsListViewAdapter.notifyDataSetChanged();
 
                 }else{
                     suggestionsListViewAdapter.clear();
+                    suggestionsListViewAdapter.notifyDataSetChanged();
                 }
 
 
@@ -272,7 +301,6 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                 break;
             case R.id.maintenance_settings:
                 Intent intent = new Intent(this, LocationSettingActivity.class );
-                intent.putExtra("LOCATION_LIST", locationList);
                 startActivity(intent);
 
 
@@ -332,6 +360,85 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy){}
 
+    //change the connection status in database according to the status var.
+    //TODO figure out how to disconnect the user when app is closed.
+    private void setConnectionStatus(boolean status){
+        if(mAuth != null) {
+            DatabaseReference mUserRef = FirebaseDatabase.getInstance().getReference().child("users")
+                   .child(mFirebaseUser.getUid()).child("status");
+            if(status)
+                mUserRef.setValue("connected");
+            else mUserRef.setValue("disconnected");
+        }
+    }
+
+    //set the Locations for the search suggestions and more.
+    private void setLocationList(){
+        locationList = new ArrayList<>();
+
+        DatabaseReference locationReference = FirebaseDatabase.getInstance().getReference()
+                .child("locations");
+
+        locationReference.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                Location tempLocation = new Location();
+
+                tempLocation.setName(dataSnapshot.getValue(Location.class).getName());
+                tempLocation.setBeacon(dataSnapshot.getValue(Location.class).getBeacon());
+                tempLocation.setCategory(dataSnapshot.getValue(Location.class).getCategory());
+
+                Point p = new Point();
+                p.setX(Integer.parseInt(dataSnapshot.child("x").getValue().toString()));
+                p.setY(Integer.parseInt(dataSnapshot.child("y").getValue().toString()));
+
+                tempLocation.setCoordinates(p);
+
+                locationList.add(tempLocation);
+                suggestionsListViewAdapter.notifyDataSetChanged();
+            }
+
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                String locationName = dataSnapshot.getValue(Location.class).getName();
+                for(Location temp : locationList){
+                    if(temp.getName().equals(locationName)){
+                        int index = locationList.indexOf(temp);
+
+                        locationList.get(index).setName(dataSnapshot.getValue(Location.class).getName());
+                        locationList.get(index).setBeacon(dataSnapshot.getValue(Location.class).getBeacon());
+                        locationList.get(index).setCategory(dataSnapshot.getValue(Location.class).getCategory());
+                        locationList.get(index).getCoordinates().setX(dataSnapshot.getValue(Point.class).getX());
+                        locationList.get(index).getCoordinates().setY(dataSnapshot.getValue(Point.class).getY());
+                        suggestionsListViewAdapter.notifyDataSetChanged();
+                    }
+                }
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+                String locationName = dataSnapshot.getValue(Location.class).getName();
+                for(Location temp : locationList) {
+                    if (temp.getName().equals(locationName)) {
+                        locationList.remove(temp);
+                    }
+                }
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
     //setting the search bar to the locationList var retrieved from DB earlier.
     //setting on click for the search item to transfer to the location page.
     public void setSearchListView(){
@@ -352,29 +459,31 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
         });
     }
 
-    //change the connection status in database according to the status var.
-    //TODO figure out how to disconnect the user when app is closed.
-    private void setConnectionStatus(boolean status){
-        if(mAuth != null) {
-            DatabaseReference mUserRef = FirebaseDatabase.getInstance().getReference().child("users")
-                   .child(mFirebaseUser.getUid()).child("status");
-            if(status)
-                mUserRef.setValue("connected");
-            else mUserRef.setValue("disconnected");
-        }
+    //Builds the users inbox.
+    private void setUserInbox(){
+        DatabaseReference userInboxRef = FirebaseDatabase.getInstance().getReference()
+                .child("users-inbox").child(mFirebaseUser.getUid());
+        mInboxUtil = new InboxUtil(userInboxRef);
+
+
     }
 
     //getting the user friend list from the database and update the friendList ArrayList object. set to friendListViewAdapter
-    private void refreshFriendAdapter() {
+    private void setFriendAdapter() {
+        DatabaseReference userFriendListRef = FirebaseDatabase.getInstance().getReference()
+                .child("users-friends").child(mFirebaseUser.getUid());
+        friendsListView = (ListView)findViewById(R.id.friend_listView);
+        friendsListViewAdapter = new FriendListAdapter(new ArrayList<String>(), getApplicationContext(), userFriendListRef);
+        friendsListView.setAdapter(friendsListViewAdapter);
 
         //Reference to the current user-friend structure.
         DatabaseReference currentUserFriendsDb = FirebaseDatabase.getInstance().getReference()
                 .child("users-friends").child(mFirebaseUser.getUid());
+
         //add listener to any changes in the users friend list, any change will result in a refresh of the friend listview by adding updated user friend uid list.
         currentUserFriendsDb.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                friendsListViewAdapter.myAddAll(new ArrayList<String>());
                 friendsListViewAdapter.notifyDataSetChanged();
             }
             @Override
@@ -397,54 +506,179 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
 
     //function too add a friend to user friend list in db by email.
     public void inviteFriend(View v){
-       final DatabaseReference mRef = FirebaseDatabase.getInstance().getReference()
-               .child("users");
-       final AlertDialog.Builder addFriendAD = new AlertDialog.Builder(this);
-       final EditText friendEmailInput = new EditText(this);
-       friendEmailInput.setText("");
-       addFriendAD.setView(friendEmailInput);
-       addFriendAD.setPositiveButton("Invite", new DialogInterface.OnClickListener() {
-           @Override
-           public void onClick(DialogInterface dialog, int which) {
-               Query query = mRef.orderByChild("email").equalTo(friendEmailInput.getText().toString());
-               query.addListenerForSingleValueEvent(new ValueEventListener() {
-                   @Override
-                   public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                       for(DataSnapshot ds : dataSnapshot.getChildren()){
+        final DatabaseReference mRef = FirebaseDatabase.getInstance().getReference()
+                .child("users");
+        final AlertDialog.Builder addFriendAD = new AlertDialog.Builder(this);
+        final EditText friendEmailInput = new EditText(this);
+        friendEmailInput.setText("");
+        addFriendAD.setView(friendEmailInput);
+        addFriendAD.setPositiveButton("Invite", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Query query = mRef.orderByChild("email").equalTo(friendEmailInput.getText().toString());
+                query.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        for(DataSnapshot ds : dataSnapshot.getChildren()){
 
-                           if(!mUserUtil.checkIfFriendExist(ds.getKey())) {
-                               RequestMessage message = mInboxUtil.setRequestMessage(ds.getKey(), mUserUtil.getCurrentUser().getUserId(),
-                                       mUserUtil.getCurrentUser().getUsername(),"friend request");
-                              mInboxUtil.sendRequest(message);
+                            if(!mUserUtil.checkIfFriendExist(ds.getKey())) {
+                                RequestMessage message = mInboxUtil.setRequestMessage(ds.getKey(), mUserUtil.getCurrentUser().getUserId(),
+                                        mUserUtil.getCurrentUser().getUsername(),"friend request");
+                                mInboxUtil.sendRequest(message);
 
-                           } else {
-                               Toast.makeText(getBaseContext(), "Friend already in your list", Toast.LENGTH_SHORT).show();
-                           }
-                       }
-                   }
+                            } else {
+                                Toast.makeText(getBaseContext(), "Friend already in your list", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    }
 
-                   @Override
-                   public void onCancelled(@NonNull DatabaseError databaseError) {
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                   }
-               });
-           }
-       });
+                    }
+                });
+            }
+        });
 
-       addFriendAD.setNegativeButton("close", null);
-       addFriendAD.show();
-
-
+        addFriendAD.setNegativeButton("close", null);
+        addFriendAD.show();
     }
 
-    //Builds the users inbox.
-    private void setUserInbox(){
-        DatabaseReference userInboxRef = FirebaseDatabase.getInstance().getReference()
-                .child("users-inbox").child(mFirebaseUser.getUid());
-        mInboxUtil = new InboxUtil(userInboxRef);
+    //init the bluetoothLE vars, check for permissions.
+    private void setBluetooth(){
+        //Check if device does support BT by hardware
+        if (!getBaseContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH)) {
+            //Toast shows a message on the screen for a LENGTH_SHORT period
+            Toast.makeText(this, "BLUETOOTH NOT SUPPORTED!", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+
+        //Check if device does support BT Low Energy by hardware. Else close the app(finish())!
+        if (!getBaseContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            //Toast shows a message on the screen for a LENGTH_SHORT period
+            Toast.makeText(this, "BLE NOT SUPPORTED!", Toast.LENGTH_SHORT).show();
+            finish();
+        } else {
+            BluetoothAdapter mBTAdapter = BluetoothAdapter.getDefaultAdapter();
+            if(mBTAdapter==null){
+                Toast.makeText(this, "ERROR GETTING BLUETOOTH ADAPTER!", Toast.LENGTH_SHORT).show();
+                finish();
+            } else {
+                //Check if BT is enabled! This method requires BT permissions in the manifest.
+                if (!mBTAdapter.isEnabled()) {
+                    //If it is not enabled, ask user to enable it with default BT enable dialog! BT enable response will be received in the onActivityResult method.
+                    Intent enableBTintent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                    startActivityForResult(enableBTintent, PERMISSION_REQUEST_COARSE_BL);
+                }
+            }
+        }
+
+        //check if has Location permissions
+        if(this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            //If Location permissions are not granted for the app, ask user for it! Request response will be received in the onRequestPermissionsResult.
+            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_COARSE_LOCATION);
+        }
+
+        final BluetoothManager bluetoothManager = (BluetoothManager)getSystemService(Context.BLUETOOTH_SERVICE);
+        mBluetoothAdapter = bluetoothManager.getAdapter();
 
 
+        //Create the scan settings
+        ScanSettings.Builder scanSettingsBuilder = new ScanSettings.Builder();
+        //Set scan latency mode. Lower latency, faster device detection/more battery and resources consumption
+        scanSettingsBuilder.setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY);
+        //Wrap settings together and save on a settings var (declared globally).
+        scanSettings = scanSettingsBuilder.build();
+        //Get the BLE scanner from the BT adapter (var declared globally)
+        scanner = mBluetoothAdapter.getBluetoothLeScanner();
     }
+
+    //check if user granted permissions to Location.
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
+        //Check if permission request response is from Location
+        switch (requestCode) {
+            case PERMISSION_REQUEST_COARSE_LOCATION: {
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //User granted permissions. Setup the scan settings
+                    Log.d("TAG", "coarse location permission granted");
+                } else {
+                    //User denied Location permissions. Here you could warn the user that without
+                    //Location permissions the app is not able to scan for BLE devices and eventually
+                    //Close the app
+                    finish();
+                }
+            }
+        }
+    }
+
+    //handle activity result codes, result from BLE permission intent and more...
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        //Check if the response is from BT
+        if(requestCode == PERMISSION_REQUEST_COARSE_BL){
+            // User chose not to enable Bluetooth.
+            if (resultCode == Activity.RESULT_CANCELED) {
+                finish();
+                return;
+            }
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    //start/stop the leScan.
+    private void initLeScan(boolean state){
+        if(state){
+            scanner.startScan(null, scanSettings, mScanCallback);
+        } else {
+            scanner.stopScan(mScanCallback);
+        }
+    }
+
+    //here all scanned devices will show on var result.
+    private ScanCallback mScanCallback = new ScanCallback() {
+        @Override
+        public void onScanResult(int callbackType, ScanResult result) {
+            super.onScanResult(callbackType, result);
+
+            MyBeacon scannedBeacon = new MyBeacon();
+            scannedBeacon.setMACaddress(result.getDevice().getAddress());
+            scannedBeacon.setName(result.getDevice().getName());
+            scannedBeacon.setRssi(result.getRssi());
+            boolean contains = false;
+
+            //if scanned device already in the list, update it.
+            for (int i=0; i<scannedDeivcesList.size(); i++) {
+                if (scannedDeivcesList.get(i).getMACaddress().contains(result.getDevice().getAddress())) {
+                    contains = true;
+                    scannedDeivcesList.set(i, scannedBeacon);
+                }
+            }
+
+
+            //add to the list all the devices scanned that has "SIN-PROJECT" string in the name.
+            if(!contains) {
+                if (result.getDevice().getName() != null && result.getDevice().getName().contains("SIN")) {
+                    scannedBeacon.setName(scannedBeacon.getName().substring(4));
+                    scannedDeivcesList.add(scannedBeacon);
+
+                }
+            }
+        }
+    };
+
+    //find the closest beacon from the deviceList based on RSSI and return it
+    private MyBeacon findClosestBeacon(){
+        MyBeacon proximityMaxBeacon = scannedDeivcesList.get(0);
+        for(MyBeacon temp : scannedDeivcesList){
+            if(temp.getRssi() > proximityMaxBeacon.getRssi()){
+                proximityMaxBeacon = temp;
+            }
+        }
+        return proximityMaxBeacon;
+    }
+
+
+
 
 
 

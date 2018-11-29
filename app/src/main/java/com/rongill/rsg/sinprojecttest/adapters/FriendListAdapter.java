@@ -18,6 +18,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.rongill.rsg.sinprojecttest.R;
+import com.rongill.rsg.sinprojecttest.basic_objects.User;
 
 import java.util.ArrayList;
 
@@ -103,33 +104,22 @@ public class FriendListAdapter extends ArrayAdapter<String> {
         }
 
         DatabaseReference friendUserRefByUid = FirebaseDatabase.getInstance().getReference()
-                .child("users").child(friendUid).child("username");
-        friendUserRefByUid.addListenerForSingleValueEvent(new ValueEventListener() {
+                .child("users").child(friendUid);
+        friendUserRefByUid.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                viewHolder.friendName.setText(dataSnapshot.getValue().toString());
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                viewHolder.friendName.setText(dataSnapshot.getValue(User.class).getUsername());
 
-            }
-        });
-
-        DatabaseReference friendStatusRef = FirebaseDatabase.getInstance().getReference()
-                .child("users").child(friendsUidList.get(position)).child("status");
-        friendStatusRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                switch (dataSnapshot.getValue().toString()){
+                switch (dataSnapshot.getValue(User.class).getStatus()) {
                     case "connected":
                         viewHolder.connectionStatus.setImageResource(R.drawable.friend_connected_icon);
                         break;
-
                     case "disconnected":
                         viewHolder.connectionStatus.setImageResource(R.drawable.friend_disconnected_icon);
                         break;
                 }
+
             }
 
             @Override
@@ -140,14 +130,4 @@ public class FriendListAdapter extends ArrayAdapter<String> {
 
         return convertView;
     }
-
-    public void myAddAll(ArrayList<String> friendsUidList){
-
-        for(String s : friendsUidList) {
-            super.add(s);
-        }
-
-    }
-
-
 }

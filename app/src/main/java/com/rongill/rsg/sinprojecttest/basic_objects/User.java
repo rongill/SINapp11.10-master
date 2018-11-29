@@ -8,7 +8,7 @@ import java.util.Objects;
 
 public class User implements Serializable {
 
-    private String userId, status, userName, userType;
+    private String userId, status, username, userType;
     private ArrayList<User> friends = new ArrayList<>();
     private MyBeacon currentBeacon;
 
@@ -16,10 +16,20 @@ public class User implements Serializable {
 
     public User(String userId, String userName, String status, String userType){
         this.userId = userId;
-        this.userName = userName;
+        this.username = userName;
         this.status = status;
         this.userType = userType;
+        currentBeacon = new MyBeacon();
 
+    }
+
+    public MyBeacon getCurrentBeacon() {
+        return currentBeacon;
+    }
+
+    public void setCurrentBeacon(MyBeacon currentBeacon) {
+        this.currentBeacon = currentBeacon;
+        //TODO get beacon (X,Y) from DB.
     }
 
     public void setFriends(ArrayList<User> friendList){
@@ -52,11 +62,11 @@ public class User implements Serializable {
     }
 
     public String getUsername() {
-        return userName;
+        return username;
     }
 
     public void setUsername(String userName) {
-        this.userName = userName;
+        this.username = userName;
     }
 
     public String getStatus() {
@@ -89,6 +99,6 @@ public class User implements Serializable {
     @Override
     public int hashCode() {
 
-        return Objects.hash(getUserId(), getStatus(), userName, getUserType());
+        return Objects.hash(getUserId(), getStatus(), username, getUserType());
     }
 }

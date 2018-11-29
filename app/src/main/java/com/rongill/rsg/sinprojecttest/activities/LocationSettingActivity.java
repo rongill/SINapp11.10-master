@@ -113,19 +113,18 @@ public class LocationSettingActivity extends AppCompatActivity {
             //create the locations list, when added in DB, also will add in locations list here.
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                    Location tempLocation = new Location();
-                    tempLocation.setName(dataSnapshot.getValue(Location.class).getName());
-                    tempLocation.setCategory(dataSnapshot.getValue(Location.class).getCategory());
-                    tempLocation.setBeacon(dataSnapshot.getValue(Location.class).getBeacon());
+                Location tempLocation = new Location();
+                tempLocation.setName(dataSnapshot.getValue(Location.class).getName());
+                tempLocation.setCategory(dataSnapshot.getValue(Location.class).getCategory());
+                tempLocation.setBeacon(dataSnapshot.getValue(Location.class).getBeacon());
 
-                    Point p = new Point();
-                    p.setX(Integer.parseInt(dataSnapshot.child("x").getValue().toString()));
-                    p.setY(Integer.parseInt(dataSnapshot.child("y").getValue().toString()));
+                Point p = new Point();
+                p.setX(Integer.parseInt(dataSnapshot.child("x").getValue().toString()));
+                p.setY(Integer.parseInt(dataSnapshot.child("y").getValue().toString()));
 
-                    tempLocation.setCoordinates(p);
+                tempLocation.setCoordinates(p);
 
-                    locations.add(tempLocation);
-
+                locations.add(tempLocation);
 
                 locationListAdapter.clear();
                 locationListAdapter.addAll(locations);

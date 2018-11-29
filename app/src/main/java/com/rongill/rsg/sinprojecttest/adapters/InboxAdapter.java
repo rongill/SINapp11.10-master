@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import static android.view.View.GONE;
 
 public class InboxAdapter extends ArrayAdapter<RequestMessage> {
+    private final String TAG = "InboxAdapter";
     private ArrayList<RequestMessage> mInbox = new ArrayList<>();
     private DatabaseReference userInboxRef;
     private Context mContext;
@@ -40,21 +41,6 @@ public class InboxAdapter extends ArrayAdapter<RequestMessage> {
         super(context,R.layout.inbox_list_layout, inbox);
         this.mContext = context;
         this.userInboxRef = userInboxRef;
-
-        userInboxRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for(DataSnapshot ds : dataSnapshot.getChildren()){
-                    inbox.add(ds.getValue(RequestMessage.class));
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
         this.mInbox = inbox;
     }
 
@@ -80,32 +66,35 @@ public class InboxAdapter extends ArrayAdapter<RequestMessage> {
         final ViewHolder viewHolder;
         InboxAdapter.this.notifyDataSetChanged();
 
-        if(convertView == null){
+        if(convertView == null) {
 
             viewHolder = new ViewHolder();
             LayoutInflater inflater = LayoutInflater.from(getContext());
             convertView = inflater.inflate(R.layout.inbox_list_layout, parent, false);
 
-            viewHolder.message = (TextView)convertView.findViewById(R.id.request_message_TV);
-            viewHolder.comfirmBtn = (Button)convertView.findViewById(R.id.confirm_request_btn);
-            viewHolder.denyBtn = (Button)convertView.findViewById(R.id.deny_request_btn);
-            viewHolder.pokeBackBtn = (Button)convertView.findViewById(R.id.poke_back_btn);
+            viewHolder.message = (TextView) convertView.findViewById(R.id.request_message_TV);
+            viewHolder.comfirmBtn = (Button) convertView.findViewById(R.id.confirm_request_btn);
+            viewHolder.denyBtn = (Button) convertView.findViewById(R.id.deny_request_btn);
+            viewHolder.pokeBackBtn = (Button) convertView.findViewById(R.id.poke_back_btn);
 
             //set view according to request type
-            switch (message.getRequestType()){
+
+
+            switch (message.getRequestType()) {
                 case "friend request":
-                    ViewGroup confirmDenyButtonLayout = (ViewGroup)convertView.findViewById(R.id.confirm_deny_inbox_layout);
+                    ViewGroup confirmDenyButtonLayout = (ViewGroup) convertView.findViewById(R.id.confirm_deny_inbox_layout);
                     confirmDenyButtonLayout.setVisibility(View.VISIBLE);
                     break;
 
                 //TODO some devices show 2 lines for this request (poke) for some reason.. debug
                 case "poke":
-                    ViewGroup pokeBackButtonLayout = (ViewGroup)convertView.findViewById(R.id.poke_back_layout);
+                    ViewGroup pokeBackButtonLayout = (ViewGroup) convertView.findViewById(R.id.poke_back_layout);
                     pokeBackButtonLayout.setVisibility(View.VISIBLE);
                     break;
             }
 
             convertView.setTag(viewHolder);
+
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
         }
@@ -114,20 +103,20 @@ public class InboxAdapter extends ArrayAdapter<RequestMessage> {
         if(message.getRequestType()!=null){
             switch (message.getRequestType()){
                 case "friend request":
-                    String friendRequestText = message.getSenderUsername() + " has sent you a friend request";
+                    String friendRequestText = getItem(position).getSenderUsername() + " has sent you a friend request";
                     viewHolder.message.setText(friendRequestText);
                     break;
 
                 case "poke":
-                    String pokeRequestText = "You have been poked by " + message.getSenderUsername() + " ,poke back?";
+                    String pokeRequestText = "You have been poked by " + getItem(position).getSenderUsername() + " ,poke back?";
                     viewHolder.message.setText(pokeRequestText);
                     break;
 
                 case "poke back":
-                    String pokeBackText = message.getSenderUsername()+" poked you back!";
+                    String pokeBackText = getItem(position).getSenderUsername()+" poked you back!";
                     viewHolder.message.setText(pokeBackText);
                     Toast.makeText(mContext, pokeBackText, Toast.LENGTH_LONG).show();
-                    deleteRequest(position, "poke back");
+                    deleteRequest(message, message.getRequestType());
                     break;
 
                     default:
@@ -160,11 +149,10 @@ public class InboxAdapter extends ArrayAdapter<RequestMessage> {
 
                         viewHolder.comfirmBtn.setVisibility(GONE);
                         viewHolder.denyBtn.setVisibility(GONE);
-                        String confirmedText = "friend request from " + message.getSenderUsername() + " confirmed";
+                        String confirmedText = "friend request from " + getItem(position).getSenderUsername() + " confirmed";
                         viewHolder.message.setText(confirmedText);
-                        InboxAdapter.this.notifyDataSetChanged();
 
-                        deleteRequest(position, message.getRequestType());
+                        deleteRequest(message, message.getRequestType());
 
 
 
@@ -177,10 +165,9 @@ public class InboxAdapter extends ArrayAdapter<RequestMessage> {
             public void onClick(View v) {
                 viewHolder.comfirmBtn.setVisibility(GONE);
                 viewHolder.denyBtn.setVisibility(GONE);
-                String denyText = "friend request from " + message.getSenderUsername() + " denied";
+                String denyText = "friend request from " + getItem(position).getSenderUsername() + " denied";
                 viewHolder.message.setText(denyText);
-                InboxAdapter.this.notifyDataSetChanged();
-                deleteRequest(position, message.getRequestType());
+                deleteRequest(message, message.getRequestType());
             }
         });
 
@@ -188,10 +175,10 @@ public class InboxAdapter extends ArrayAdapter<RequestMessage> {
             @Override
             public void onClick(View v) {
                 viewHolder.pokeBackBtn.setVisibility(GONE);
-                String pokeBackText = "Poke back to " + message.getSenderUsername() + " sent";
+                String pokeBackText = "Poke back to " + getItem(position).getSenderUsername() + " sent";
                 viewHolder.message.setText(pokeBackText);
                 pokeBack(message);
-                deleteRequest(position,message.getRequestType());
+                deleteRequest(message, message.getRequestType());
             }
         });
 
@@ -200,13 +187,10 @@ public class InboxAdapter extends ArrayAdapter<RequestMessage> {
         return convertView;
     }
 
+    private void deleteRequest(final RequestMessage message, final String requestType){
 
 
-
-    private void deleteRequest(final int position, final String requestType){
-
-
-        mInbox.remove(position);
+        mInbox.remove(message);
         InboxAdapter.this.notifyDataSetChanged();
 
         Query query = userInboxRef.orderByChild("requestType").equalTo(requestType);
@@ -214,7 +198,7 @@ public class InboxAdapter extends ArrayAdapter<RequestMessage> {
            @Override
            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                   if (ds.child("senderUid").getValue().toString().equals(getItem(position).getSenderUid()))
+                   if (ds.getValue(RequestMessage.class).getSenderUid().equals(message.getSenderUid()))
                        userInboxRef.child(ds.getKey()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                            @Override
                            public void onComplete(@NonNull Task<Void> task) {
@@ -240,6 +224,7 @@ public class InboxAdapter extends ArrayAdapter<RequestMessage> {
     }
 
     private void pokeBack(final RequestMessage message){
+        //TODO try to get the username in some other way. maybe make a static currentUser var.
         DatabaseReference currentUserRef = FirebaseDatabase.getInstance().getReference()
                 .child("users").child(message.getReceiverUid()).child("username");
         currentUserRef.addListenerForSingleValueEvent(new ValueEventListener() {

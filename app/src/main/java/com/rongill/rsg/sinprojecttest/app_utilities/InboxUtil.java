@@ -1,9 +1,11 @@
 package com.rongill.rsg.sinprojecttest.app_utilities;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -41,20 +43,32 @@ public class InboxUtil {
 
     private void setInboxAndListener(){
 
-        userInbox.getInboxRef().addValueEventListener(new ValueEventListener() {
+        userInbox.getInboxRef().addChildEventListener(new ChildEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(userInbox.getMessages()!=null)
-                    userInbox.getMessages().clear();
-                for(DataSnapshot ds : dataSnapshot.getChildren()){
-                    RequestMessage tempMessage = new RequestMessage();
-                    tempMessage.setReceiverUid(ds.getValue(RequestMessage.class).getReceiverUid());
-                    tempMessage.setSenderUid(ds.getValue(RequestMessage.class).getSenderUid());
-                    tempMessage.setSenderUsername(ds.getValue(RequestMessage.class).getSenderUsername());
-                    tempMessage.setRequestType(ds.getValue(RequestMessage.class).getRequestType());
-                    tempMessage.setRequestStatus(ds.getValue(RequestMessage.class).getRequestStatus());
-                    userInbox.addMessage(tempMessage);
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                RequestMessage tempMessage = dataSnapshot.getValue(RequestMessage.class);
+                userInbox.getMessages().add(tempMessage);
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                RequestMessage tempMessage = dataSnapshot.getValue(RequestMessage.class);
+                for(RequestMessage temp : userInbox.getMessages()){
+                    if(temp.getSenderUid().equals(tempMessage.getSenderUid())) {
+                        userInbox.getMessages().set(userInbox.getMessages().indexOf(temp), tempMessage);
+                    }
                 }
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+                RequestMessage tempMessage = dataSnapshot.getValue(RequestMessage.class);
+                userInbox.getMessages().remove(tempMessage);
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
             }
 
             @Override

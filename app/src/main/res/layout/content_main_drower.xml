@@ -19,6 +19,13 @@
         app:srcCompat="@drawable/sinicon"
         android:rotation="90"
         />
+    <TextView
+        android:id="@+id/user_location_TV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/compass_image"
+        android:layout_centerHorizontal="true"
+        android:text="User Location"/>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/structure_page_fab"
