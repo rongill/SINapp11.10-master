@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp">
+
+        <TextView
+            android:id="@+id/add_beacon_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add/Modify Beacon"
+            android:layout_marginTop="10dp"
+            android:textSize="30sp"
+            android:layout_centerHorizontal="true"
+            />
+        <EditText
+            android:id="@+id/beacon_name_ET"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/add_beacon_header"
+            android:layout_marginTop="20dp"
+            android:hint="Beacon Name"/>
+        <EditText
+            android:id="@+id/beacon_floor_ET"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/beacon_name_ET"
+            android:layout_marginTop="30dp"
+            android:hint="Floor"/>
+
+        <EditText
+            android:id="@+id/beacon_x_axis"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/beacon_floor_ET"
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+            android:inputType="number"
+            android:hint="X" />
+
+        <EditText
+            android:id="@+id/beacon_y_axis"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/beacon_floor_ET"
+            android:layout_toEndOf="@+id/beacon_x_axis"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+            android:inputType="number"
+            android:hint="Y" />
+
+        <Button
+            android:id="@+id/submit_beacon_settings_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/beacon_y_axis"
+            android:layout_marginTop="20dp"
+            android:text="Submit changes"
+            android:backgroundTint="@color/colorPrimary"
+            />
+
+
+
+    </RelativeLayout>
+</ScrollView>

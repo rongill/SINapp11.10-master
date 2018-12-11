@@ -2,18 +2,28 @@ package com.rongill.rsg.sinprojecttest.navigation;
 
 import com.rongill.rsg.sinprojecttest.navigation.Point;
 
-public class MyBeacon {
+import java.io.Serializable;
 
-    private String name, MACaddress;
+public class MyBeacon implements Serializable {
+
+    private String name, MACaddress, floor;
     private int rssi;
     private Point coordinates;
 
     public MyBeacon(){}
-    public MyBeacon(String name, String MACaddress, int rssi, Point coordinates) {
+    public MyBeacon(String name, String MACaddress, int rssi, Point coordinates, String floor) {
         this.name = name;
         this.MACaddress = MACaddress;
         this.rssi = rssi;
         this.coordinates = coordinates;
+        this.floor = floor;
+    }
+    public MyBeacon(MyBeacon other){
+        this.name = other.getName();
+        this.MACaddress = other.getMACaddress();
+        this.floor = other.getFloor();
+        this.rssi = other.getRssi();
+        this.coordinates = new Point(other.getCoordinates());
     }
 
     public String getName() {
@@ -46,5 +56,13 @@ public class MyBeacon {
 
     public void setCoordinates(Point coordinates) {
         this.coordinates = coordinates;
+    }
+
+    public String getFloor() {
+        return floor;
+    }
+
+    public void setFloor(String floor) {
+        this.floor = floor;
     }
 }

@@ -26,7 +26,6 @@ import java.util.HashMap;
 public class AddModifyLocationActivity extends Activity {
 
     private EditText locationNameEt, locationCategoryEt, beaconEt, xAxisEt, yAxisEt;
-    private Button submitBtn;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -42,7 +41,7 @@ public class AddModifyLocationActivity extends Activity {
         beaconEt = (EditText)findViewById(R.id.beacon_id_ET);
         xAxisEt = (EditText)findViewById(R.id.x_axis);
         yAxisEt = (EditText)findViewById(R.id.y_axis);
-        submitBtn = (Button)findViewById(R.id.submit_location_btn);
+        Button submitBtn = (Button) findViewById(R.id.submit_location_btn);
 
         //if the intent is to modify a location, set the text in the ET to modify before submit
         if(getIntent().getSerializableExtra("LOCATION_MODIFY") != null){
@@ -111,18 +110,13 @@ public class AddModifyLocationActivity extends Activity {
                 finish();
             }
         });
-
-
-
-
-
     }
 
     private boolean submitReady(){
-        if (!locationNameEt.getText().toString().isEmpty()
+        return !locationNameEt.getText().toString().isEmpty()
                 && !locationCategoryEt.getText().toString().isEmpty()
-                && !beaconEt.getText().toString().isEmpty())
-            return true;
-        return false;
+                && !beaconEt.getText().toString().isEmpty()
+                && !xAxisEt.getText().toString().isEmpty()
+                && !yAxisEt.getText().toString().isEmpty();
     }
 }

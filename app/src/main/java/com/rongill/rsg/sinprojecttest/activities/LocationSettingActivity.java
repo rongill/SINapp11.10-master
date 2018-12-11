@@ -30,6 +30,7 @@ public class LocationSettingActivity extends AppCompatActivity {
 
     private LocationListAdapter locationListAdapter;
     private ArrayList<Location> locations;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,9 +42,6 @@ public class LocationSettingActivity extends AppCompatActivity {
         locations = new ArrayList<>();
         setLocationAdapter();
         setLocationsList();
-
-
-
 
     }
 
@@ -98,7 +96,9 @@ public class LocationSettingActivity extends AppCompatActivity {
                 startActivity(intent);
                 break;
             case R.id.beacon_settings:
-                //TODO move to beacon settings page.
+                Intent beaconSettingIntent = new Intent(this, BeaconSettingActivity.class);
+                startActivity(beaconSettingIntent);
+                break;
         }
 
         return super.onOptionsItemSelected(item);
@@ -129,8 +129,6 @@ public class LocationSettingActivity extends AppCompatActivity {
                 locationListAdapter.clear();
                 locationListAdapter.addAll(locations);
                 locationListAdapter.notifyDataSetChanged();
-
-
             }
 
             //when child changed, build a temp location, look it up at the locations list, and replace.
@@ -158,7 +156,6 @@ public class LocationSettingActivity extends AppCompatActivity {
                 locationListAdapter.clear();
                 locationListAdapter.addAll(locations);
                 locationListAdapter.notifyDataSetChanged();
-
             }
 
             //when item removed in database, also remove from list.

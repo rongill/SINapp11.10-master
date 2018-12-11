@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp">
+
+    <TextView
+        android:id="@+id/beacon_name_item_listView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Beacon name"
+        android:textSize="30sp"
+
+        />
+    <TextView
+        android:id="@+id/beacon_floor_indicator_item_listView"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/beacon_name_item_listView"
+        android:text="Floor"
+        android:layout_marginTop="10dp"
+        />
+
+    <TextView
+        android:id="@+id/beacon_coordinates_item_listView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/beacon_floor_indicator_item_listView"
+        android:text="Coordinates"
+        android:layout_marginTop="10dp"
+        />
+
+
+    <Button
+        android:id="@+id/remove_beacon_button"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_below="@id/beacon_coordinates_item_listView"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="10dp"
+        android:text="Remove"
+        android:textAllCaps="false" />
+
+    <Button
+        android:id="@+id/modify_beacon_button"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_below="@id/beacon_coordinates_item_listView"
+        android:layout_marginTop="10dp"
+        android:layout_toStartOf="@+id/remove_beacon_button"
+        android:backgroundTint="@color/colorPrimary"
+        android:text="Modify"
+        android:textAllCaps="false" />
+
+</RelativeLayout>

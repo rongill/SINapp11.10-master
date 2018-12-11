@@ -40,10 +40,12 @@
         <activity
             android:name=".activities.InboxActivity"
             android:theme="@style/AppTheme.WindowOverActivityPopupTheme" />
-        <activity android:name=".activities.LocationSettingActivity"/>
+        <activity android:name=".activities.LocationSettingActivity" />
         <activity
             android:name=".activities.AddModifyLocationActivity"
-            android:theme="@style/AppTheme.WindowOverActivityPopupTheme"/>
+            android:theme="@style/AppTheme.WindowOverActivityPopupTheme" />
+        <activity android:name=".activities.BeaconSettingActivity" />
+        <activity android:name=".activities.AddModifyBeaconActivity"></activity>
     </application>
 
 </manifest>
