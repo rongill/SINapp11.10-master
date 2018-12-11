@@ -1,4 +1,4 @@
-package com.rongill.rsg.sinprojecttest.signIn_pages;
+package com.rongill.rsg.sinprojecttest.activities;
 
 import android.content.Intent;
 import android.support.annotation.NonNull;
@@ -17,13 +17,12 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.rongill.rsg.sinprojecttest.MainDrowerActivity;
 import com.rongill.rsg.sinprojecttest.R;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class CreateUserPrifileActivity extends AppCompatActivity {
+public class CreateUserProfileActivity extends AppCompatActivity {
 
     private static final String TAG = "CreateUserProfileActivity";
 
@@ -41,7 +40,7 @@ public class CreateUserPrifileActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_create_user_prifile);
+        setContentView(R.layout.activity_create_user_profile);
 
         //init editText fields
         nameET = (EditText)findViewById(R.id.profile_nameET);
@@ -69,23 +68,16 @@ public class CreateUserPrifileActivity extends AppCompatActivity {
         if(mFirebaseAuth!=null) {
             userId = mFirebaseAuth.getCurrentUser().getUid();
             DatabaseReference currentUserDb = FirebaseDatabase.getInstance().getReference()
-                    .child("users").child(userId);
+                    .child("users-profile").child(userId);
 
-            Map newPost = new HashMap();
+            Map <String, String>newPost = new HashMap<>();
             newPost.put("username", nameET.getText().toString());
             newPost.put("age", ageET.getText().toString());
             newPost.put("telephone", telephoneET.getText().toString());
             newPost.put("gender", genderSpinner.getSelectedItem().toString());
+            newPost.put("email", mFirebaseAuth.getCurrentUser().getEmail());
 
-            // String preferences = "";
-
-            //  for(int i=0;i<4;i++){
-            //    if(cbArray[i].isSelected())
-            //         preferences+=cbArray[i].getText().toString() + " ";
-            //   }
-
-            //   newPost.put("preferences", preferences);
-            currentUserDb.setValue(newPost).addOnCompleteListener(CreateUserPrifileActivity.this,
+            currentUserDb.setValue(newPost).addOnCompleteListener(CreateUserProfileActivity.this,
                     new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {

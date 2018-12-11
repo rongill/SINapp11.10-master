@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp">
+
+    <TextView
+        android:id="@+id/add_location_header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add/Modify location"
+        android:layout_marginTop="10dp"
+        android:textSize="30sp"
+        android:layout_centerHorizontal="true"
+        />
+    <EditText
+        android:id="@+id/location_name_ET"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/add_location_header"
+        android:layout_marginTop="20dp"
+        android:hint="Location Name"/>
+    <EditText
+        android:id="@+id/location_category_ET"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/location_name_ET"
+        android:layout_marginTop="30dp"
+        android:hint="Category"/>
+
+    <EditText
+        android:id="@+id/beacon_id_ET"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/location_category_ET"
+        android:layout_marginTop="30dp"
+        android:hint="Related Beacon Id"
+        />
+
+    <EditText
+        android:id="@+id/x_axis"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/beacon_id_ET"
+        android:layout_marginTop="30dp"
+        android:gravity="center"
+        android:hint="X" />
+
+    <EditText
+        android:id="@+id/y_axis"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/beacon_id_ET"
+        android:layout_toEndOf="@+id/x_axis"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="30dp"
+        android:gravity="center"
+        android:hint="Y" />
+
+    <Button
+        android:id="@+id/submit_location_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/y_axis"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="30dp"
+        android:text="Submit changes"
+        android:backgroundTint="@color/colorPrimary"
+        />
+
+
+
+</RelativeLayout>
+</ScrollView>

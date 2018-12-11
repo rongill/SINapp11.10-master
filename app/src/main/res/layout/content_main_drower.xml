@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".MainDrowerActivity"
+    tools:context=".activities.MainDrowerActivity"
     tools:showIn="@layout/app_bar_main_drower">
 
     <ImageView
@@ -19,14 +19,36 @@
         app:srcCompat="@drawable/sinicon"
         android:rotation="90"
         />
+    <TextView
+        android:id="@+id/user_location_TV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/compass_image"
+        android:layout_centerHorizontal="true"
+        android:text="User Location"/>
+
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/structure_page_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end|bottom"
         android:src="@drawable/ic_structure_icon"
-        android:layout_margin="16dp"
+        android:layout_margin="10dp"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"/>
+        android:layout_alignParentEnd="true"/>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/inbox_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/structure_page_fab"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="10dp"
+        android:src="@drawable/ic_message" />
+
+
+
+
+
 
 </RelativeLayout>

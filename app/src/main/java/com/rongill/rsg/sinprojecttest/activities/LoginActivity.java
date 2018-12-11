@@ -1,4 +1,4 @@
-package com.rongill.rsg.sinprojecttest.signIn_pages;
+package com.rongill.rsg.sinprojecttest.activities;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -16,7 +16,6 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.rongill.rsg.sinprojecttest.MainDrowerActivity;
 import com.rongill.rsg.sinprojecttest.R;
 
 public class LoginActivity extends AppCompatActivity {
@@ -53,9 +52,6 @@ public class LoginActivity extends AppCompatActivity {
         mFirebaseAuth = FirebaseAuth.getInstance();
 
     }
-
-
-
 
     public void loginOrSignup(String email, String password){
 
@@ -114,9 +110,21 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if(!input.getText().toString().isEmpty()){
-                    //TODO send password reset email from Firebase SDK
-                    Toast.makeText(LoginActivity.this, "An email has been send to " + input.getText().toString(),
-                            Toast.LENGTH_LONG).show();
+                    mFirebaseAuth.sendPasswordResetEmail(input.getText().toString())
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if(task.isSuccessful()) {
+                                        Toast.makeText(LoginActivity.this, "An email has been send to " + input.getText().toString(),
+                                                Toast.LENGTH_LONG).show();
+                                    } else {
+                                        Toast.makeText(LoginActivity.this, "something whent wrong... try again.",
+                                                Toast.LENGTH_LONG).show();
+                                    }
+                                }
+                            });
+
+
                 }
             }
         });

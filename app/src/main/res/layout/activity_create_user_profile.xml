@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".signIn_pages.CreateUserPrifileActivity">
+    tools:context=".activities.CreateUserProfileActivity">
 
     <ImageView
         android:id="@+id/imageView"

@@ -1,4 +1,4 @@
-package com.rongill.rsg.sinprojecttest.signIn_pages;
+package com.rongill.rsg.sinprojecttest.activities;
 
 import android.content.Intent;
 import android.support.annotation.NonNull;
@@ -13,12 +13,17 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.rongill.rsg.sinprojecttest.R;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class SignupActivity extends AppCompatActivity {
 
     private static final String TAG = "SignupActivity";
-    private EditText emailET, confirmEmail, passwordET, confirmPassword;
+    private EditText emailET, userNameET, passwordET, confirmPassword;
     private FirebaseAuth mFirebaseAuth;
 
 
@@ -28,7 +33,7 @@ public class SignupActivity extends AppCompatActivity {
         setContentView(R.layout.activity_signup);
 
         emailET = (EditText)findViewById(R.id.emailSignup);
-        confirmEmail = (EditText)findViewById(R.id.confirm_email);
+        userNameET = (EditText)findViewById(R.id.username);
         passwordET = (EditText)findViewById(R.id.passwordSignup);
         confirmPassword = (EditText)findViewById(R.id.confirm_password);
 
@@ -37,25 +42,21 @@ public class SignupActivity extends AppCompatActivity {
     }
 
     public void signUp(View v){
-        String []email = new String[2];
         String []password = new String[2];
 
-        if(emailET!=null && passwordET != null && confirmEmail!=null && confirmPassword != null) {
-            email[0] = emailET.getText().toString();
-            email[1] = confirmEmail.getText().toString();
+        if(passwordET != null && confirmPassword != null) {
             password[0] = passwordET.getText().toString();
             password[1] = confirmPassword.getText().toString();
         }
         // check that both fields are filled
-        if(validateEmailAndPassword(email, password)){
-            mFirebaseAuth.createUserWithEmailAndPassword(email[0], password[0])
+        if(validateEmailAndPassword(emailET.getText().toString(), userNameET.getText().toString(), password)){
+            mFirebaseAuth.createUserWithEmailAndPassword(emailET.getText().toString(), password[0])
                     .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if(task.isSuccessful()){
                                 Log.d(TAG, "createUserWithEmail:success");
                                 updateUI(true);
-
                             }
                             else{
                                 Log.d(TAG, "createUserWithEmail:failed");
@@ -70,8 +71,16 @@ public class SignupActivity extends AppCompatActivity {
     }
 
     public void updateUI(Boolean state){
-        if(state){
-            startActivity(new Intent(this, CreateUserPrifileActivity.class));
+        if(state && mFirebaseAuth != null){
+            DatabaseReference mRef = FirebaseDatabase.getInstance().getReference().child("users").child(mFirebaseAuth.getUid());
+            Map<String,String> newPost = new HashMap<>();
+            newPost.put("username", userNameET.getText().toString());
+            newPost.put("email",emailET.getText().toString());
+            newPost.put("status","connected");
+            newPost.put("user-type", "regular");
+            mRef.setValue(newPost);
+
+            startActivity(new Intent(this, CreateUserProfileActivity.class));
             finish();
         }
         else{
@@ -79,11 +88,13 @@ public class SignupActivity extends AppCompatActivity {
         }
     }
 
-    private boolean validateEmailAndPassword(String[] email, String[] password){
-        if(email[0].isEmpty()||email[1].isEmpty()||password[0].isEmpty()||password[1].isEmpty()){
+    private boolean validateEmailAndPassword(String email, String username, String[] password){
+        if(email.isEmpty()||username.isEmpty()||password[0].isEmpty()||password[1].isEmpty()){
             Toast.makeText(this, "please fill all fields", Toast.LENGTH_LONG).show();
-        } else if(email[0].equals(email[1]) && password[0].equals(password[1]))
+        } else if(password[0].equals(password[1]))
             return true;
         return false;
     }
+
+
 }

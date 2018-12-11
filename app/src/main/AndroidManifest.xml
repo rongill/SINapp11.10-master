@@ -8,21 +8,26 @@
     <uses-permission android:name="android.permission.READ_PROFILE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/sinicon"
         android:label="SIN"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
+        android:supportsRtl="false"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".signIn_pages.LoginActivity" />
-        <activity android:name=".signIn_pages.SignupActivity" />
-        <activity android:name=".signIn_pages.CreateUserPrifileActivity" />
-        <activity android:name=".FriendProfileActivity" />
+        <activity android:name=".activities.LoginActivity" />
+        <activity android:name=".activities.SignupActivity" />
+        <activity android:name=".activities.CreateUserProfileActivity" />
+        <activity android:name=".activities.FriendProfileActivity" />
         <activity
-            android:name=".MainDrowerActivity"
+            android:name=".activities.MainDrowerActivity"
             android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -30,8 +35,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".LocationInfoPage" />
-        <activity android:name=".StructureInfoActivity"></activity>
+        <activity android:name=".activities.LocationInfoPage" />
+        <activity android:name=".activities.StructureInfoActivity" />
+        <activity
+            android:name=".activities.InboxActivity"
+            android:theme="@style/AppTheme.WindowOverActivityPopupTheme" />
+        <activity android:name=".activities.LocationSettingActivity" />
+        <activity
+            android:name=".activities.AddModifyLocationActivity"
+            android:theme="@style/AppTheme.WindowOverActivityPopupTheme" />
+        <activity android:name=".activities.BeaconSettingActivity" />
+        <activity android:name=".activities.AddModifyBeaconActivity"></activity>
     </application>
 
 </manifest>

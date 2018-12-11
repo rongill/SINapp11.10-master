@@ -1,8 +1,13 @@
 package com.rongill.rsg.sinprojecttest.navigation;
 
-public class Point {
+import java.io.Serializable;
+import java.util.Objects;
+
+public class Point implements Serializable {
     private int x;
     private int y;
+
+    public Point(){}
 
     public Point(int x, int y){
         this.x = x;
@@ -27,5 +32,25 @@ public class Point {
 
     public int getX() {
         return x;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Point)) return false;
+        Point point = (Point) o;
+        return getX() == point.getX() &&
+                getY() == point.getY();
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(getX(), getY());
+    }
+
+    @Override
+    public String toString() {
+        return "(" + x + "," + y + ')';
     }
 }

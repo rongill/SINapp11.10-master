@@ -48,6 +48,16 @@
                     android:text="My Friends"
                     android:textSize="20dp" />
 
+                <ImageView
+                    android:id="@+id/add_friend_button"
+                    android:onClick="inviteFriend"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_person_add_bottun"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="10dp"/>
+
 
             </RelativeLayout>
 
