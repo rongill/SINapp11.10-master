@@ -7,6 +7,7 @@ import android.hardware.SensorManager;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 public class Compass implements SensorEventListener {
 
@@ -14,16 +15,26 @@ public class Compass implements SensorEventListener {
     private float[] mGeomagnetic = new float[3];
     private float azimuth =0f;
     private float currentAzimuth =0f;
-    public SensorManager mSensorManager;
     private int oriantationNew;
 
-    private ImageView compassImage;
+    public SensorManager mSensorManager;
+    public TextView userLocationTv;
+    public ImageView compassImage;
 
     public Compass(){
     }
     public Compass(ImageView compassImage, SensorManager activitySensorManager ){
         this.compassImage = compassImage;
         mSensorManager = activitySensorManager;
+
+    }
+
+    public TextView getUserLocationTv() {
+        return userLocationTv;
+    }
+
+    public void setUserLocationTv(TextView userLocationTv) {
+        this.userLocationTv = userLocationTv;
     }
 
     @Override

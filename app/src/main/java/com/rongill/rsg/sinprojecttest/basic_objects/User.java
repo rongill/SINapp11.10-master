@@ -1,6 +1,17 @@
 package com.rongill.rsg.sinprojecttest.basic_objects;
 
+import android.support.annotation.NonNull;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.rongill.rsg.sinprojecttest.navigation.MyBeacon;
+import com.rongill.rsg.sinprojecttest.navigation.Point;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -29,7 +40,7 @@ public class User implements Serializable {
 
     public void setCurrentBeacon(MyBeacon currentBeacon) {
         this.currentBeacon = currentBeacon;
-        //TODO get beacon (X,Y) from DB.
+        updateUserBeaconNameInDB(currentBeacon.getName());
     }
 
     public void setFriends(ArrayList<User> friendList){
@@ -100,5 +111,33 @@ public class User implements Serializable {
     public int hashCode() {
 
         return Objects.hash(getUserId(), getStatus(), username, getUserType());
+    }
+
+    private void updateUserBeaconNameInDB(String beaconName){
+        DatabaseReference userBeaconRef = FirebaseDatabase.getInstance().getReference()
+                .child("users").child(FirebaseAuth.getInstance().getUid()).child("beacon");
+        userBeaconRef.setValue(beaconName);
+    }
+
+    public void setUserBeaconCoordinatesFromDB(){
+        DatabaseReference beaconRef = FirebaseDatabase.getInstance().getReference()
+                .child("beacons");
+        Query query = beaconRef.orderByChild("name").equalTo(currentBeacon.getName());
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(DataSnapshot ds : dataSnapshot.getChildren()){
+                    Point p = new Point();
+                    p.setX(Integer.parseInt(ds.child("x").getValue().toString()));
+                    p.setY(Integer.parseInt(ds.child("y").getValue().toString()));
+                    currentBeacon.setCoordinates(p);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 }

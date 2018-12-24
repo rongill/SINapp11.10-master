@@ -1,5 +1,6 @@
 package com.rongill.rsg.sinprojecttest.app_utilities;
 
+import android.app.NotificationManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 
 public class InboxUtil {
 
+    //TODO add documentation
     private FirebaseUser mFirebaseUser;
     private Inbox userInbox;
     private ArrayList<RequestMessage> pendingRequests = new ArrayList<>();
@@ -48,6 +50,10 @@ public class InboxUtil {
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 RequestMessage tempMessage = dataSnapshot.getValue(RequestMessage.class);
                 userInbox.getMessages().add(tempMessage);
+                //TODO here we can add a notification in main UI thread when new message arrives.
+                if(tempMessage.getRequestType().equals("poke")){
+
+                }
             }
 
             @Override
@@ -58,6 +64,7 @@ public class InboxUtil {
                         userInbox.getMessages().set(userInbox.getMessages().indexOf(temp), tempMessage);
                     }
                 }
+                //TODO here we can add a notification when message status changes, such as request confirmed/denied etc. , Dynamic navigation confirmed status could start the sender navigation use-case, the receiver confirmed and will start navigating, the sender will get notified here and could start navigating also.
             }
 
             @Override

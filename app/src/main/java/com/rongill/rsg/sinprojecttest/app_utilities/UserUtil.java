@@ -12,18 +12,18 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.rongill.rsg.sinprojecttest.basic_objects.User;
+import com.rongill.rsg.sinprojecttest.navigation.MyBeacon;
 
 import java.io.Serializable;
 
 public class UserUtil implements Serializable {
 
-    private FirebaseAuth mFirebaseAuth;
     private FirebaseUser mFirebaseUser;
     private User currentUser;
 
 
     public UserUtil(){
-        mFirebaseAuth = FirebaseAuth.getInstance();
+        FirebaseAuth mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
         currentUser = new User();
         setCurrentUser();

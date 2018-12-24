@@ -1,5 +1,6 @@
 package com.rongill.rsg.sinprojecttest.adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -18,11 +19,15 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 import com.rongill.rsg.sinprojecttest.R;
 import com.rongill.rsg.sinprojecttest.basic_objects.RequestMessage;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
 
 import static android.view.View.GONE;
 
@@ -34,7 +39,7 @@ public class InboxAdapter extends ArrayAdapter<RequestMessage> {
 
     private static class ViewHolder{
         TextView message;
-        Button comfirmBtn, denyBtn, pokeBackBtn;
+        Button confirmBtn, denyBtn, pokeBackBtn;
     }
 
     public InboxAdapter(final ArrayList<RequestMessage> inbox, DatabaseReference userInboxRef, Context context){
@@ -73,7 +78,7 @@ public class InboxAdapter extends ArrayAdapter<RequestMessage> {
             convertView = inflater.inflate(R.layout.inbox_list_layout, parent, false);
 
             viewHolder.message = (TextView) convertView.findViewById(R.id.request_message_TV);
-            viewHolder.comfirmBtn = (Button) convertView.findViewById(R.id.confirm_request_btn);
+            viewHolder.confirmBtn = (Button) convertView.findViewById(R.id.confirm_request_btn);
             viewHolder.denyBtn = (Button) convertView.findViewById(R.id.deny_request_btn);
             viewHolder.pokeBackBtn = (Button) convertView.findViewById(R.id.poke_back_btn);
 
@@ -82,15 +87,15 @@ public class InboxAdapter extends ArrayAdapter<RequestMessage> {
 
             switch (message.getRequestType()) {
                 case "friend request":
-                    ViewGroup confirmDenyButtonLayout = (ViewGroup) convertView.findViewById(R.id.confirm_deny_inbox_layout);
-                    confirmDenyButtonLayout.setVisibility(View.VISIBLE);
+                    ViewGroup confirmDenyFriendRequestButtonLayout = (ViewGroup) convertView.findViewById(R.id.confirm_deny_inbox_layout);
+                    confirmDenyFriendRequestButtonLayout.setVisibility(View.VISIBLE);
                     break;
 
-                //TODO some devices show 2 lines for this request (poke) for some reason.. debug
                 case "poke":
                     ViewGroup pokeBackButtonLayout = (ViewGroup) convertView.findViewById(R.id.poke_back_layout);
                     pokeBackButtonLayout.setVisibility(View.VISIBLE);
                     break;
+
             }
 
             convertView.setTag(viewHolder);
@@ -126,7 +131,7 @@ public class InboxAdapter extends ArrayAdapter<RequestMessage> {
         }
 
         // set the confirmBtn functionality, will apply for friend requests and navigation requests.
-        viewHolder.comfirmBtn.setOnClickListener(new View.OnClickListener() {
+        viewHolder.confirmBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 switch (message.getRequestType()) {
@@ -147,23 +152,21 @@ public class InboxAdapter extends ArrayAdapter<RequestMessage> {
                             }
                         });
 
-                        viewHolder.comfirmBtn.setVisibility(GONE);
+                        viewHolder.confirmBtn.setVisibility(GONE);
                         viewHolder.denyBtn.setVisibility(GONE);
                         String confirmedText = "friend request from " + getItem(position).getSenderUsername() + " confirmed";
                         viewHolder.message.setText(confirmedText);
 
                         deleteRequest(message, message.getRequestType());
 
-
-
-
+                        break;
                 }
             }
         });
         viewHolder.denyBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                viewHolder.comfirmBtn.setVisibility(GONE);
+                viewHolder.confirmBtn.setVisibility(GONE);
                 viewHolder.denyBtn.setVisibility(GONE);
                 String denyText = "friend request from " + getItem(position).getSenderUsername() + " denied";
                 viewHolder.message.setText(denyText);
@@ -242,5 +245,43 @@ public class InboxAdapter extends ArrayAdapter<RequestMessage> {
 
             }
         });
+    }
+
+    private void createNavigationLog(String currentUserUid, final String destinationUserId, String destinationUserName){
+        //TODO start the dynamic nav events, create a dynamic navigation LOG in DB, set status to started, that will trigger a DB listener from main activity, and change the text/layout of the current message.
+        DatabaseReference userNavigationLogRef = FirebaseDatabase.getInstance().getReference()
+                .child("user-navigation-log").child(currentUserUid);
+        HashMap<String,String> newPost = new HashMap<>();
+
+        newPost.put("navigation-type", "dynamic-navigation");
+        newPost.put("destinationUserId", destinationUserId);
+        newPost.put("time-started", ServerValue.TIMESTAMP.get("timestamp"));
+        newPost.put("navigation-status", "started");
+
+        userNavigationLogRef.push().setValue(newPost);
+
+        makeToastMessage("Navigation to " + destinationUserName + "started.");
+
+        final DatabaseReference navigationRequestMessageRef = FirebaseDatabase.getInstance().getReference()
+                .child("users-inbox").child(currentUserUid);
+        Query navigationRequestQuery = navigationRequestMessageRef.orderByChild("requestType").equalTo("navigation");
+        navigationRequestQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(DataSnapshot ds : dataSnapshot.getChildren()){
+                    if(ds.child("senderUid").toString().equals(destinationUserId)){
+                        navigationRequestMessageRef.child(ds.getKey()).child("requestStatus").setValue("confirmed");
+                        //TODO this will trigger on senders app that the navigation has been confirmed, need to add that.
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        ((Activity)mContext).finish();
     }
 }

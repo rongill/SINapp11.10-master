@@ -13,14 +13,21 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 import com.rongill.rsg.sinprojecttest.R;
 import com.rongill.rsg.sinprojecttest.basic_objects.RequestMessage;
 import com.rongill.rsg.sinprojecttest.basic_objects.User;
+
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 public class FriendProfileActivity extends AppCompatActivity {
 
@@ -57,8 +64,8 @@ public class FriendProfileActivity extends AppCompatActivity {
 
                 break;
             case R.id.meetBtn:
-                //TODO send a navigation request to friend inbox
                 Toast.makeText(this, "meet request sent to friend", Toast.LENGTH_SHORT).show();
+                sendNavigationRequest();
                 break;
             case R.id.sendLocatonBtn:
                 //TODO send users current location to friend inbox
@@ -106,6 +113,16 @@ public class FriendProfileActivity extends AppCompatActivity {
         DatabaseReference friendInboxRef = FirebaseDatabase.getInstance().getReference()
                 .child("users-inbox").child(friend.getUserId());
         friendInboxRef.push().setValue(message);
+    }
+
+    //send a RequestMassage to the friend with request type navigation.
+    private void sendNavigationRequest(){
+        HashMap<String, String> newPost = new HashMap<>();
+        newPost.put("sender-uid", currentUser.getUserId());
+        newPost.put("sender-username", currentUser.getUsername());
+        DatabaseReference friendNavigationLogRef = FirebaseDatabase.getInstance().getReference()
+                .child("user-navigation-log").child(friend.getUserId());
+        friendNavigationLogRef.push().setValue(newPost);
     }
 
 }

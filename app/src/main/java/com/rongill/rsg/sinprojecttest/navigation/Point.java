@@ -53,4 +53,19 @@ public class Point implements Serializable {
     public String toString() {
         return "(" + x + "," + y + ')';
     }
+
+    public float distanceToOtherPoint(Point p){
+        return (float)Math.sqrt(Math.pow(p.getX()-this.x,2)+Math.pow(p.getY()-this.y,2));
+    }
+
+    public int relativePosition(Point p){
+        int result;
+        if(p.getX() >= this.x && p.getY() >= this.y) result = 1;
+        else if(p.getX() >= this.x && p.getY() <= this.y) result = 2;
+        else if(p.getX() <= this.x && p.getY() >= this.y) result = 3;
+        else result = 4;
+
+        return result;
+
+    }
 }

@@ -50,13 +50,13 @@ public class InboxActivity extends Activity {
 
         setInbox();
 
-
     }
 
     private void setInbox(){
         userInboxRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
                 RequestMessage tempMessage = dataSnapshot.getValue(RequestMessage.class);
                 inbox.add(tempMessage);
                 inboxAdapter.clear();
@@ -88,4 +88,5 @@ public class InboxActivity extends Activity {
             }
         });
     }
+
 }

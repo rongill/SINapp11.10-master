@@ -10,6 +10,7 @@ public class RequestMessage implements Serializable {
     private String senderUsername;
     private String requestType;
     private String requestStatus;
+    private String date;
 
     public RequestMessage(String receiverUid, String senderUid, String senderUsername, String requestType, String requestStatus){
         this.receiverUid = receiverUid;
@@ -17,6 +18,15 @@ public class RequestMessage implements Serializable {
         this.senderUsername = senderUsername;
         this.requestType = requestType;
         this.requestStatus = requestStatus;
+    }
+
+    public RequestMessage(String receiverUid, String senderUid, String senderUsername, String requestType, String requestStatus, String date){
+        this.receiverUid = receiverUid;
+        this.senderUid = senderUid;
+        this.senderUsername = senderUsername;
+        this.requestType = requestType;
+        this.requestStatus = requestStatus;
+        this.date = date;
     }
 
     public RequestMessage(){}

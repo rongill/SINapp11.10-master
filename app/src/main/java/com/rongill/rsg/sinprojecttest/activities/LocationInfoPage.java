@@ -1,5 +1,6 @@
 package com.rongill.rsg.sinprojecttest.activities;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.annotation.NonNull;
@@ -7,9 +8,11 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.BounceInterpolator;
 import android.view.animation.ScaleAnimation;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -31,18 +34,21 @@ import com.rongill.rsg.sinprojecttest.navigation.Point;
 
 public class LocationInfoPage extends AppCompatActivity {
 
+    private static final int STATIC_NAV_RESULT_CODE = 200;
+
     private FirebaseAuth mFirebaseAuth;
 
     private String locationName;
     private Location thisLocation;
     private boolean isFavorite = false;
+    private Button startNavBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_location_info_page);
 
-        //set the text to the location name transfered from the intent
+        //set the text to the location name transferred from the intent
         TextView locationNameTV = (TextView) findViewById(R.id.location_name);
         locationName = getIntent().getStringExtra("LOCATION_NAME");
         locationNameTV.setText(locationName);
@@ -52,6 +58,18 @@ public class LocationInfoPage extends AppCompatActivity {
 
         mFirebaseAuth = FirebaseAuth.getInstance();
         setFavToggleButton();
+
+        startNavBtn = (Button) findViewById(R.id.start_navigation_button);
+        startNavBtn.setVisibility(View.INVISIBLE);
+        startNavBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent navIntent = new Intent();
+                navIntent.putExtra("LOCATION", thisLocation);
+                setResult(STATIC_NAV_RESULT_CODE, navIntent);
+                finish();
+            }
+        });
 
 
     }
@@ -136,6 +154,7 @@ public class LocationInfoPage extends AppCompatActivity {
                     thisLocation.setCoordinates(p);
                 }
 
+                startNavBtn.setVisibility(View.VISIBLE);
             }
 
             @Override

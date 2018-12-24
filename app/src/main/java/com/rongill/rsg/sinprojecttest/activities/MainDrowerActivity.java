@@ -2,12 +2,12 @@ package com.rongill.rsg.sinprojecttest.activities;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
-import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
-import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -18,10 +18,11 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.SearchView;
@@ -36,6 +37,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -61,16 +64,22 @@ import com.rongill.rsg.sinprojecttest.basic_objects.RequestMessage;
 import com.rongill.rsg.sinprojecttest.app_utilities.UserUtil;
 import com.rongill.rsg.sinprojecttest.navigation.Compass;
 import com.rongill.rsg.sinprojecttest.navigation.MyBeacon;
+import com.rongill.rsg.sinprojecttest.navigation.MyBleScanner;
+import com.rongill.rsg.sinprojecttest.navigation.NavigationService;
 import com.rongill.rsg.sinprojecttest.navigation.Point;
+import com.rongill.rsg.sinprojecttest.navigation.StaticIndoorNavigation;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class MainDrowerActivity extends AppCompatActivity implements SensorEventListener{
 
     private final String TAG = "MainActivity";
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
     private static final int PERMISSION_REQUEST_COARSE_BL = 2;
+    private static final int NAVIGATION_REQUEST_CODE = 100;
+    private static final int STATIC_NAV_RESULT_CODE = 200;
+    private static final int DYNAMIC_NAV_RESULT_CODE = 300;
+
     //Firebase vars
     private FirebaseAuth mAuth;
     private FirebaseUser mFirebaseUser;
@@ -93,11 +102,12 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
     //user Inbox vars
     private InboxUtil mInboxUtil;
 
-    //bluetooth vars
-    private BluetoothAdapter mBluetoothAdapter;
-    private BluetoothLeScanner scanner;
-    private ScanSettings scanSettings;
-    private List<MyBeacon> scannedDeivcesList;
+    //bluetooth scanner util
+    private MyBleScanner myBleScanner;
+    private int scanneOnOff = 0;
+
+    private NavigationService navigationService;
+
 
     //TODO !!! how to stop the app when minimized!!! need this for stop scanning or deferent scanning, and for signout method.
     @Override
@@ -127,6 +137,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                 suggestionsListViewAdapter.clear();
             }
         });
+
 
         //set drawer layout & toggles.
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -162,14 +173,6 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
             }
         });
 
-        //compass imageview
-        //init compass vars for nav view
-        ImageView compassImage = (ImageView) findViewById(R.id.compass_image);
-        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        compass = new Compass(compassImage, mSensorManager);
-
-
-
         if(mAuth.getCurrentUser()!=null){
 
             mUserUtil = new UserUtil();
@@ -180,33 +183,38 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
             setUserInbox();
             setLocationList();
 
+
+            //compass imageview
+            //init compass vars for nav view
+            ImageView compassImage = (ImageView) findViewById(R.id.compass_image);
+            mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+            compass = new Compass(compassImage, mSensorManager);
+
+
             setBluetooth();
-            scannedDeivcesList = new ArrayList<>();
-            //start the scan
-            initLeScan(true);
 
-
-            final TextView userLocationTv = (TextView)findViewById(R.id.user_location_TV);
-            userLocationTv.setText("detecting...");
-
-            //init a handler to execute after 5sec the stopLeScan Runnable obj.
-            Handler mHandler = new Handler();
-            Runnable stopLeScanThread = new Runnable(){
+            compassImage.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void run() {
-                    initLeScan(false);
+                public void onClick(View v) {
+                    scanneOnOff++;
+                    TextView userLocationTv = (TextView)findViewById(R.id.user_location_TV);
 
-                    if(scannedDeivcesList.size()>0){
-                        mUserUtil.getCurrentUser().setCurrentBeacon(findClosestBeacon());
-                        userLocationTv.setText(mUserUtil.getCurrentUser().getCurrentBeacon().getName());
+                    if(scanneOnOff%2 == 0){
+                        myBleScanner.getScannedDeviceList().clear();
+                        userLocationTv.setText("Starting scan");
+                        try {
+                            Thread.sleep(300);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        myBleScanner.initLeScan(mScanCallback, true);
                     } else {
-                        userLocationTv.setText("Unknown Location");
+                        myBleScanner.initLeScan(mScanCallback, false);
+                        Toast.makeText(getBaseContext(), "Scan stopped.", Toast.LENGTH_LONG).show();
                     }
-
                 }
-            };
-            mHandler.postDelayed(stopLeScanThread, 5000);
-            //mHandler.removeCallbacks(leScanThread);
+            });
+
         }
     }
 
@@ -312,7 +320,16 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
     protected void onStart() {
         super.onStart();
         mAuth.addAuthStateListener((mAuthListener));
-        if(mAuth.getCurrentUser()!=null) setConnectionStatus(true);
+        if(mAuth.getCurrentUser()!=null){
+            setConnectionStatus(true);
+            //TODO check the below and start implementing the Dynamic nav Use-Case.
+            //start service for listening to any changes to the user navigation requests from DB.
+            //when a navigation request sent to user, will get a notification that will start the main activity and start the Dynamic Navigation algorithm.
+            //the reply from the notification is initialized on the onResume overridded method blow.
+            navigationService = new NavigationService();
+            startService(new Intent(this, NavigationService.class));
+        }
+
     }
 
     @Override
@@ -328,7 +345,11 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
         super.onResume();
         compass.mSensorManager.registerListener((SensorEventListener) this, mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),SensorManager.SENSOR_DELAY_GAME);
         compass.mSensorManager.registerListener((SensorEventListener) this, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),SensorManager.SENSOR_DELAY_GAME);
-
+        Bundle extras = getIntent().getExtras();
+        if(getIntent().getStringExtra("DYNAMIC_NAV") != null){
+            Toast.makeText(this, " starting nav to " + extras.get("DYNAMIC_NAV"), Toast.LENGTH_LONG ).show();
+            getIntent().removeExtra("DYNAMIC_NAV");
+        }
     }
 
     @Override
@@ -341,6 +362,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
     protected void onDestroy() {
 
         super.onDestroy();
+        stopService(new Intent(this, NavigationService.class));
     }
 
     public void signOut(){
@@ -348,6 +370,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
         startActivity(new Intent(this, LoginActivity.class));
         setConnectionStatus(false);
         mAuth.signOut();
+        myBleScanner.initLeScan(mScanCallback, false);
         finish();
 
     }
@@ -361,7 +384,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
     public void onAccuracyChanged(Sensor sensor, int accuracy){}
 
     //change the connection status in database according to the status var.
-    //TODO figure out how to disconnect the user when app is closed.
+    //TODO figure out how to disconnect the user when app is in background.
     private void setConnectionStatus(boolean status){
         if(mAuth != null) {
             DatabaseReference mUserRef = FirebaseDatabase.getInstance().getReference().child("users")
@@ -409,8 +432,13 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                         locationList.get(index).setName(dataSnapshot.getValue(Location.class).getName());
                         locationList.get(index).setBeacon(dataSnapshot.getValue(Location.class).getBeacon());
                         locationList.get(index).setCategory(dataSnapshot.getValue(Location.class).getCategory());
-                        locationList.get(index).getCoordinates().setX(dataSnapshot.getValue(Point.class).getX());
-                        locationList.get(index).getCoordinates().setY(dataSnapshot.getValue(Point.class).getY());
+
+                        Point p = new Point();
+                        p.setX(Integer.parseInt(dataSnapshot.child("x").getValue().toString()));
+                        p.setY(Integer.parseInt(dataSnapshot.child("y").getValue().toString()));
+
+                        locationList.get(index).setCoordinates(p);
+
                         suggestionsListViewAdapter.notifyDataSetChanged();
                     }
                 }
@@ -454,7 +482,10 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                 String locationName = (String)suggestionsListView.getItemAtPosition(position);
                 Intent intent = new Intent(getBaseContext(), LocationInfoPage.class);
                 intent.putExtra("LOCATION_NAME", locationName);
-                startActivity(intent);
+                startActivityForResult(intent, NAVIGATION_REQUEST_CODE);
+                suggestionsListViewAdapter.clear();
+                suggestionsListViewAdapter.notifyDataSetChanged();
+
             }
         });
     }
@@ -464,8 +495,32 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
         DatabaseReference userInboxRef = FirebaseDatabase.getInstance().getReference()
                 .child("users-inbox").child(mFirebaseUser.getUid());
         mInboxUtil = new InboxUtil(userInboxRef);
+        userInboxRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                initChannels(getBaseContext());
+                for(DataSnapshot ds : dataSnapshot.getChildren()){
+                    RequestMessage tempMessage = ds.getValue(RequestMessage.class);
+                    if(tempMessage.getRequestType().equals("poke")){
+                        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getBaseContext(), "default")
+                                .setContentTitle("poke")
+                                .setContentText(tempMessage.getSenderUsername() + " poked you!")
+                                .setSmallIcon(R.drawable.sinicon)
+                                .setPriority(NotificationCompat.PRIORITY_HIGH);
+                        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(getBaseContext());
+                        notificationManagerCompat.notify(0, mBuilder.build());
 
 
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+        //TODO add child event listener for any new inbox messages received. maybe change the Inbox fab to highlighted?
     }
 
     //getting the user friend list from the database and update the friendList ArrayList object. set to friendListViewAdapter
@@ -571,6 +626,11 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                     startActivityForResult(enableBTintent, PERMISSION_REQUEST_COARSE_BL);
                 }
             }
+            //init the BLE scanner
+            myBleScanner = new MyBleScanner((BluetoothManager)getSystemService(Context.BLUETOOTH_SERVICE));
+
+            //start the first scan
+            myBleScanner.initLeScan(mScanCallback, true);
         }
 
         //check if has Location permissions
@@ -579,18 +639,8 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
             requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_COARSE_LOCATION);
         }
 
-        final BluetoothManager bluetoothManager = (BluetoothManager)getSystemService(Context.BLUETOOTH_SERVICE);
-        mBluetoothAdapter = bluetoothManager.getAdapter();
 
 
-        //Create the scan settings
-        ScanSettings.Builder scanSettingsBuilder = new ScanSettings.Builder();
-        //Set scan latency mode. Lower latency, faster device detection/more battery and resources consumption
-        scanSettingsBuilder.setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY);
-        //Wrap settings together and save on a settings var (declared globally).
-        scanSettings = scanSettingsBuilder.build();
-        //Get the BLE scanner from the BT adapter (var declared globally)
-        scanner = mBluetoothAdapter.getBluetoothLeScanner();
     }
 
     //check if user granted permissions to Location.
@@ -614,6 +664,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
     //handle activity result codes, result from BLE permission intent and more...
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         //Check if the response is from BT
         if(requestCode == PERMISSION_REQUEST_COARSE_BL){
             // User chose not to enable Bluetooth.
@@ -621,17 +672,28 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                 finish();
                 return;
             }
-            super.onActivityResult(requestCode, resultCode, data);
         }
-    }
 
-    //start/stop the leScan.
-    private void initLeScan(boolean state){
-        if(state){
-            scanner.startScan(null, scanSettings, mScanCallback);
-        } else {
-            scanner.stopScan(mScanCallback);
+        //handles static/dynamic navigation result codes from LocationInfoPage & FriendProfileActivity
+        //pull the destination from the Intent, create a static navigation object, start the navigation
+        switch (resultCode) {
+            case STATIC_NAV_RESULT_CODE:
+                myBleScanner.initLeScan(mScanCallback, false);
+                Bundle extras = data.getExtras();
+                if (extras != null) {
+                    Location destination = (Location) extras.getSerializable("LOCATION");
+                    compass.setUserLocationTv((TextView) findViewById(R.id.user_location_TV));
+                    StaticIndoorNavigation staticIndoorNavigation =
+                            new StaticIndoorNavigation(myBleScanner, mUserUtil.getCurrentUser(), destination, myBleScanner.getScanner(), compass);
+
+                    staticIndoorNavigation.startNavigation();
+                }
+                break;
+            case DYNAMIC_NAV_RESULT_CODE:
+                break;
         }
+
+
     }
 
     //here all scanned devices will show on var result.
@@ -647,40 +709,48 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
             boolean contains = false;
 
             //if scanned device already in the list, update it.
-            for (int i=0; i<scannedDeivcesList.size(); i++) {
-                if (scannedDeivcesList.get(i).getMACaddress().contains(result.getDevice().getAddress())) {
+            for (int i=0; i<myBleScanner.getScannedDeviceList().size(); i++) {
+                if (myBleScanner.getScannedDeviceList().get(i).getMACaddress().contains(result.getDevice().getAddress())) {
                     contains = true;
-                    scannedDeivcesList.set(i, scannedBeacon);
+                    myBleScanner.getScannedDeviceList().set(i, scannedBeacon);
                 }
             }
 
 
-            //add to the list all the devices scanned that has "SIN-PROJECT" string in the name.
+            //add to the list all the devices scanned that has "SIN" string in the name.
             if(!contains) {
                 if (result.getDevice().getName() != null && result.getDevice().getName().contains("SIN")) {
                     scannedBeacon.setName(scannedBeacon.getName().substring(4));
-                    scannedDeivcesList.add(scannedBeacon);
-
+                    myBleScanner.getScannedDeviceList().add(scannedBeacon);
                 }
             }
+
+            TextView userLocationTv = (TextView)findViewById(R.id.user_location_TV);
+
+            if(myBleScanner.getScannedDeviceList().size()>0){
+                mUserUtil.getCurrentUser().setCurrentBeacon(myBleScanner.findClosestBeacon());
+                mUserUtil.getCurrentUser().setUserBeaconCoordinatesFromDB();
+                userLocationTv.setText(mUserUtil.getCurrentUser().getCurrentBeacon().getName().substring(4));
+            } else {
+                userLocationTv.setText("Searching...");
+            }
+
+            
         }
     };
 
-    //find the closest beacon from the deviceList based on RSSI and return it
-    private MyBeacon findClosestBeacon(){
-        MyBeacon proximityMaxBeacon = scannedDeivcesList.get(0);
-        for(MyBeacon temp : scannedDeivcesList){
-            if(temp.getRssi() > proximityMaxBeacon.getRssi()){
-                proximityMaxBeacon = temp;
-            }
+    public void initChannels(Context context) {
+        if (Build.VERSION.SDK_INT < 26) {
+            return;
         }
-        return proximityMaxBeacon;
+        NotificationManager notificationManager =
+                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationChannel channel = new NotificationChannel("default",
+                "Channel name",
+                NotificationManager.IMPORTANCE_DEFAULT);
+        channel.setDescription("Channel description");
+        notificationManager.createNotificationChannel(channel);
     }
-
-
-
-
-
 
 
 }

@@ -8,16 +8,29 @@
     tools:context=".activities.MainDrowerActivity"
     tools:showIn="@layout/app_bar_main_drower">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:text="click compass to scan bluetooth"
+        android:layout_above="@+id/compass_image"
+        android:layout_marginBottom="10dp"
+        android:textStyle="bold"
+        android:textSize="20sp"
+        android:textAllCaps="true"/>
+
     <ImageView
         android:id="@+id/compass_image"
         android:layout_width="168dp"
         android:layout_height="192dp"
         android:layout_gravity="center"
-        android:layout_marginTop="20dp"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         app:srcCompat="@drawable/sinicon"
         android:rotation="90"
+        android:clickable="true"
+        android:focusable="true"
+
         />
     <TextView
         android:id="@+id/user_location_TV"

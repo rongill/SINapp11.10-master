@@ -78,6 +78,7 @@ public class SignupActivity extends AppCompatActivity {
             newPost.put("email",emailET.getText().toString());
             newPost.put("status","connected");
             newPost.put("user-type", "regular");
+            newPost.put("beacon", "N/A");
             mRef.setValue(newPost);
 
             startActivity(new Intent(this, CreateUserProfileActivity.class));

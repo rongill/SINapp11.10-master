@@ -45,7 +45,11 @@
             android:name=".activities.AddModifyLocationActivity"
             android:theme="@style/AppTheme.WindowOverActivityPopupTheme" />
         <activity android:name=".activities.BeaconSettingActivity" />
-        <activity android:name=".activities.AddModifyBeaconActivity"></activity>
+        <activity
+            android:name=".activities.AddModifyBeaconActivity"
+            android:theme="@style/AppTheme.WindowOverActivityPopupTheme" />
+        <service android:name=".navigation.NavigationService"/>
+
     </application>
 
 </manifest>
