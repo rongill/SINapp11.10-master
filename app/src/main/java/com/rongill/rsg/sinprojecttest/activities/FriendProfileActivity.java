@@ -25,6 +25,7 @@ import com.rongill.rsg.sinprojecttest.R;
 import com.rongill.rsg.sinprojecttest.basic_objects.RequestMessage;
 import com.rongill.rsg.sinprojecttest.basic_objects.User;
 
+import java.time.Instant;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -120,6 +121,7 @@ public class FriendProfileActivity extends AppCompatActivity {
         HashMap<String, String> newPost = new HashMap<>();
         newPost.put("sender-uid", currentUser.getUserId());
         newPost.put("sender-username", currentUser.getUsername());
+
         DatabaseReference friendNavigationLogRef = FirebaseDatabase.getInstance().getReference()
                 .child("user-navigation-log").child(friend.getUserId());
         friendNavigationLogRef.push().setValue(newPost);
