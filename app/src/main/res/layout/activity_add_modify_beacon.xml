@@ -55,6 +55,7 @@
             android:inputType="number"
             android:hint="Y" />
 
+
         <Button
             android:id="@+id/submit_beacon_settings_btn"
             android:layout_width="match_parent"

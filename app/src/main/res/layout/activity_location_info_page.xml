@@ -28,25 +28,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/location_image" />
 
-    <ToggleButton
-        android:id="@+id/button_favorite"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:background="@drawable/button_favorite"
-        android:checked="false"
-        android:textOn=""
-        android:textOff=""
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/distance_textView"
+        android:id="@+id/location_structure_textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:text="Distance:"
+        android:layout_marginTop="16dp"
+        android:text="structure:"
         android:textAppearance="@style/TextAppearance.AppCompat.Light.SearchResult.Subtitle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.501"
@@ -54,14 +42,14 @@
         app:layout_constraintTop_toBottomOf="@+id/location_name" />
 
     <TextView
-        android:id="@+id/floor_textView"
+        android:id="@+id/location_floor_textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="16dp"
         android:text="Floor:"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/distance_textView" />
+        app:layout_constraintTop_toBottomOf="@+id/location_structure_textView" />
 
     <Button
         android:id="@+id/start_navigation_button"
@@ -76,5 +64,5 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/floor_textView" />
+        app:layout_constraintTop_toBottomOf="@+id/location_floor_textView" />
 </android.support.constraint.ConstraintLayout>

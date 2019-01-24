@@ -9,7 +9,7 @@ import java.util.Scanner;
 
 public abstract class IndoorNavigation {
 
-    private final String TAG = "IndoorNavigation";
+    private  final String TAG = "IndoorNavigation";
 
     protected User currentUser;
     protected Location destination;

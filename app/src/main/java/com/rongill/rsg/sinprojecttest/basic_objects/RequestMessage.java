@@ -10,7 +10,7 @@ public class RequestMessage implements Serializable {
     private String senderUsername;
     private String requestType;
     private String requestStatus;
-    private String date;
+    private MyCalendar dateCreated;
 
     public RequestMessage(String receiverUid, String senderUid, String senderUsername, String requestType, String requestStatus){
         this.receiverUid = receiverUid;
@@ -18,15 +18,15 @@ public class RequestMessage implements Serializable {
         this.senderUsername = senderUsername;
         this.requestType = requestType;
         this.requestStatus = requestStatus;
+        this.dateCreated = new MyCalendar();
     }
 
-    public RequestMessage(String receiverUid, String senderUid, String senderUsername, String requestType, String requestStatus, String date){
-        this.receiverUid = receiverUid;
-        this.senderUid = senderUid;
-        this.senderUsername = senderUsername;
-        this.requestType = requestType;
-        this.requestStatus = requestStatus;
-        this.date = date;
+    public MyCalendar getDateCreated() {
+        return dateCreated;
+    }
+
+    public void setDateCreated(MyCalendar dateCreated) {
+        this.dateCreated = dateCreated;
     }
 
     public RequestMessage(){}

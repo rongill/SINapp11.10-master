@@ -9,7 +9,9 @@ import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class Compass implements SensorEventListener {
+import java.io.Serializable;
+
+public class Compass implements SensorEventListener, Serializable {
 
     private float[] mGravity = new float[3];
     private float[] mGeomagnetic = new float[3];

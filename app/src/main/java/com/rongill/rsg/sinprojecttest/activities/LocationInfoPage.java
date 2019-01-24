@@ -9,19 +9,10 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.BounceInterpolator;
-import android.view.animation.ScaleAnimation;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.ToggleButton;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -36,11 +27,8 @@ public class LocationInfoPage extends AppCompatActivity {
 
     private static final int STATIC_NAV_RESULT_CODE = 200;
 
-    private FirebaseAuth mFirebaseAuth;
-
-    private String locationName;
+    private String locationName, structureName;
     private Location thisLocation;
-    private boolean isFavorite = false;
     private Button startNavBtn;
 
     @Override
@@ -50,14 +38,17 @@ public class LocationInfoPage extends AppCompatActivity {
 
         //set the text to the location name transferred from the intent
         TextView locationNameTV = (TextView) findViewById(R.id.location_name);
+        TextView structureTV = (TextView) findViewById(R.id.location_structure_textView);
+
         locationName = getIntent().getStringExtra("LOCATION_NAME");
+        structureName = getIntent().getStringExtra("STRUCTURE");
         locationNameTV.setText(locationName);
+        structureTV.setText(structureName);
 
         setLocation();
         setRoundedImage();
 
-        mFirebaseAuth = FirebaseAuth.getInstance();
-        setFavToggleButton();
+
 
         startNavBtn = (Button) findViewById(R.id.start_navigation_button);
         startNavBtn.setVisibility(View.INVISIBLE);
@@ -70,55 +61,6 @@ public class LocationInfoPage extends AppCompatActivity {
                 finish();
             }
         });
-
-
-    }
-    //TODO bug to fix, remove not working, need to figure how to set the toggle btn correctly at activity start.
-    //init toggle button with small animation. add/remove location to users-favorites DB.
-    public void setFavToggleButton(){
-
-        final ToggleButton buttonFavorite = (ToggleButton)findViewById(R.id.button_favorite);
-        final ScaleAnimation scaleAnimation = new ScaleAnimation(0.7f, 1.0f, 0.7f, 1.0f,
-                Animation.RELATIVE_TO_SELF, 0.7f, Animation.RELATIVE_TO_SELF, 0.7f);
-        scaleAnimation.setDuration(500);
-        BounceInterpolator bounceInterpolator = new BounceInterpolator();
-        scaleAnimation.setInterpolator(bounceInterpolator);
-
-        DatabaseReference userFavoriteRef = FirebaseDatabase.getInstance().getReference()
-                .child("users-favorites").child(mFirebaseAuth.getUid());
-
-        //init the toggle btn to on if in fav list or off if not.
-        Query query = userFavoriteRef.orderByChild("location-name").equalTo(locationName);
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.getValue()!=null) {
-                    buttonFavorite.setChecked(true);
-                    isFavorite = true;
-                }
-
-                buttonFavorite.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        if(isChecked && !isFavorite){
-                            buttonView.startAnimation(scaleAnimation);
-                            Toast.makeText(getBaseContext(),locationName+"was added to your favorite list",Toast.LENGTH_SHORT).show();
-                            addRemoveUserFavorites(true);
-                        } else if (!isChecked) {
-                            buttonView.startAnimation(scaleAnimation);
-                            addRemoveUserFavorites(false);
-                        }
-
-                    }
-                });
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
 
 
     }
@@ -136,16 +78,18 @@ public class LocationInfoPage extends AppCompatActivity {
         thisLocation = new Location();
 
         DatabaseReference locationRef = FirebaseDatabase.getInstance().getReference()
-                .child("locations");
+                .child("structures").child(structureName).child("locations");
         Query query = locationRef.orderByChild("name").equalTo(locationName);
 
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for(DataSnapshot ds : dataSnapshot.getChildren()) {
-                    thisLocation.setBeacon(ds.getValue(Location.class).getBeacon());
+                    thisLocation.setBeaconName(ds.getValue(Location.class).getBeaconName());
                     thisLocation.setName(ds.getValue(Location.class).getName());
                     thisLocation.setCategory(ds.getValue(Location.class).getCategory());
+                    thisLocation.setFloor(ds.getValue(Location.class).getFloor());
+                    thisLocation.setStructure(ds.getValue(Location.class).getStructure());
 
                     Point p = new Point();
                     p.setX(Integer.parseInt(ds.child("x").getValue().toString()));
@@ -154,6 +98,8 @@ public class LocationInfoPage extends AppCompatActivity {
                     thisLocation.setCoordinates(p);
                 }
 
+                TextView floorTv = (TextView)findViewById(R.id.location_floor_textView);
+                floorTv.setText(thisLocation.getFloor());
                 startNavBtn.setVisibility(View.VISIBLE);
             }
 
@@ -164,48 +110,4 @@ public class LocationInfoPage extends AppCompatActivity {
         });
     }
 
-    //called from setFavToggleButton(true/false), add/remove from users favs in DB.
-    private void addRemoveUserFavorites(final boolean state){
-        FirebaseAuth mAuth = FirebaseAuth.getInstance();
-        String userId = mAuth.getUid();
-        final DatabaseReference usersFavoriteRef = FirebaseDatabase.getInstance().getReference()
-                .child("users-favorites").child(userId);
-        if(state){
-            usersFavoriteRef.push().child("location-name").setValue(locationName);
-        } else {
-            usersFavoriteRef.child("location-name").child(locationName).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
-                    if(task.isSuccessful()){
-                        Toast.makeText(getBaseContext(),locationName+"was removed from your favorite list",Toast.LENGTH_SHORT).show();
-
-                    }
-                }
-            });
-
-            /*
-            final Query query = usersFavoriteRef.orderByChild("location-name").equalTo(locationName);
-            query.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    for(DataSnapshot ds : dataSnapshot.getChildren()){
-                        usersFavoriteRef.child(ds.getKey()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                if(task.isSuccessful()){
-                                    Toast.makeText(getBaseContext(),locationName+"was removed from your favorite list",Toast.LENGTH_SHORT).show();
-
-                                }
-                            }
-                        });
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                }
-            });*/
-        }
-    }
 }

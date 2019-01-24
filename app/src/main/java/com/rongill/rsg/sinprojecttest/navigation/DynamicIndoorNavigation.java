@@ -1,31 +1,35 @@
 package com.rongill.rsg.sinprojecttest.navigation;
 
 import android.bluetooth.le.BluetoothLeScanner;
+import android.support.annotation.NonNull;
+import android.util.Log;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.rongill.rsg.sinprojecttest.basic_objects.User;
 
-public class StaticIndoorNavigation extends IndoorNavigation {
+public class DynamicIndoorNavigation extends IndoorNavigation {
 
+    private final String TAG = "DynamicIndoorNavigation";
+    private MyBleScanner dynamicBleScanner;
     private boolean hasArrived = false;
-    private MyBleScanner staticNavBleScanner;
 
-    public StaticIndoorNavigation(MyBleScanner myBleScanner, User currentUser, Location destination, BluetoothLeScanner scanner, Compass compass){
-        super(currentUser,destination, scanner, compass);
-        this.staticNavBleScanner = myBleScanner;
-
+    public DynamicIndoorNavigation(MyBleScanner myBleScanner, User currentUser, BluetoothLeScanner scanner, Compass compass) {
+        super(currentUser, null, scanner, compass);
+        this.dynamicBleScanner = myBleScanner;
     }
 
     @Override
     public void startNavigation() {
         super.startNavigation();
-
         //init the bleScanner with the scanner from Main activity.
-        staticNavBleScanner.setScanner(scanner);
+        dynamicBleScanner.setScanner(scanner);
 
         //start the LE scan, using the scanner from Main activity and the MyBleScanner scan callbacks.
-        staticNavBleScanner.initLeScan(true);
-
-        //this thread is executing a loop on a delay of 1 sec, basically checks every 1 sec if the user arrived at destination
-        //if arrived, stop scanning, post a message and end the navigation process.
+        dynamicBleScanner.initLeScan(true);
+        //this thread is executing a loop with a delay, to checks every 100 millis if the destination was initiated, if so will start the navigation.
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -35,12 +39,13 @@ public class StaticIndoorNavigation extends IndoorNavigation {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    currentUser.setCurrentBeacon(staticNavBleScanner.getClosestBeacon());
+
+                    currentUser.setCurrentBeacon(dynamicBleScanner.getClosestBeacon());
                     if(currentUser.getCurrentBeacon().getName().equals(destination.getBeaconName())){
                         hasArrived = true;
-                        staticNavBleScanner.initLeScan(false);
+                        dynamicBleScanner.initLeScan(false);
                         compass.compassImage.setRotation(90);
-                        //TODO user has arrived to destination, create a message/notification.
+                        //TODO user has arrived to destination, create a message/notification and log in server.
                     } else {
                         //calc the direction based on current user location angle to the destination coordinates.
                         //set the float value to the directionAzimuth var in indoor navigation abstract class.
@@ -58,5 +63,19 @@ public class StaticIndoorNavigation extends IndoorNavigation {
                 }
             }
         }).start();
+    }
+
+    public void stopNavigation(String navigationLogKey){
+        dynamicBleScanner.initLeScan(false);
+        compass.compassImage.setRotation(90);
+        DatabaseReference userNavigationLog = FirebaseDatabase.getInstance().getReference()
+                .child("users-navigation-log").child(currentUser.getUserId()).child(navigationLogKey)
+                .child("status");
+        userNavigationLog.setValue("stopped").addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                Log.i(TAG, "Dynamic navigation stopped");
+            }
+        });
     }
 }

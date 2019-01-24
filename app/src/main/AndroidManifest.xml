@@ -15,6 +15,7 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
+        android:name=".SinApp"
         android:allowBackup="true"
         android:icon="@drawable/sinicon"
         android:label="SIN"
@@ -25,7 +26,9 @@
         <activity android:name=".activities.LoginActivity" />
         <activity android:name=".activities.SignupActivity" />
         <activity android:name=".activities.CreateUserProfileActivity" />
-        <activity android:name=".activities.FriendProfileActivity" />
+        <activity
+            android:name=".activities.FriendProfileActivity"
+            android:parentActivityName=".activities.MainDrowerActivity"/>
         <activity
             android:name=".activities.MainDrowerActivity"
             android:theme="@style/AppTheme">
@@ -37,9 +40,6 @@
         </activity>
         <activity android:name=".activities.LocationInfoPage" />
         <activity android:name=".activities.StructureInfoActivity" />
-        <activity
-            android:name=".activities.InboxActivity"
-            android:theme="@style/AppTheme.WindowOverActivityPopupTheme" />
         <activity android:name=".activities.LocationSettingActivity" />
         <activity
             android:name=".activities.AddModifyLocationActivity"
@@ -48,7 +48,9 @@
         <activity
             android:name=".activities.AddModifyBeaconActivity"
             android:theme="@style/AppTheme.WindowOverActivityPopupTheme" />
-        <service android:name=".navigation.NavigationService"/>
+        <service android:name=".services.DynamicNavigationService"/>
+        <receiver android:name=".services.NotificationReceiver"/>
+        <service android:name=".services.InboxService"/>
 
     </application>
 

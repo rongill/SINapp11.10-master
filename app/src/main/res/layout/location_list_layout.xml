@@ -22,10 +22,18 @@
         android:layout_marginTop="10dp"
         />
     <TextView
+        android:id="@+id/floor_item_listView"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/location_category_item_listView"
+        android:text="Floor"
+        android:layout_alignStart="@+id/location_name_item_listView"
+        android:layout_marginTop="10dp" />
+    <TextView
         android:id="@+id/related_beacon_item_listView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/location_category_item_listView"
+        android:layout_below="@+id/floor_item_listView"
         android:text="Beacon"
         android:layout_alignStart="@+id/location_category_item_listView"
         android:layout_marginTop="10dp"
@@ -39,12 +47,21 @@
         android:layout_alignStart="@+id/location_category_item_listView"
         android:layout_marginTop="10dp"
         />
+    <TextView
+        android:id="@+id/date_modified_item_listView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/coordinates_item_listView"
+        android:text="Last Modified"
+        android:layout_alignStart="@+id/location_category_item_listView"
+        android:layout_marginTop="10dp"
+        />
 
     <Button
         android:id="@+id/remove_location_button"
         android:layout_width="wrap_content"
         android:layout_height="40dp"
-        android:layout_below="@id/coordinates_item_listView"
+        android:layout_below="@id/date_modified_item_listView"
         android:layout_alignParentEnd="true"
         android:layout_marginTop="10dp"
         android:text="Remove"
@@ -54,7 +71,7 @@
         android:id="@+id/modify_location_button"
         android:layout_width="wrap_content"
         android:layout_height="40dp"
-        android:layout_below="@id/coordinates_item_listView"
+        android:layout_below="@id/date_modified_item_listView"
         android:layout_marginTop="10dp"
         android:layout_toStartOf="@+id/remove_location_button"
         android:backgroundTint="@color/colorPrimary"

@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -15,6 +16,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.rongill.rsg.sinprojecttest.navigation.Location;
 import com.rongill.rsg.sinprojecttest.R;
@@ -44,49 +46,38 @@ public class StructureInfoActivity extends AppCompatActivity {
             }
         });
 
-        setLocationsListViewByCategory();
+        //get the structure name from the intent and set the location LV of that structure.
+        String structureName = getIntent().getStringExtra("STRUCTURE_NAME");
+        setFullLocationListFromDB(structureName);
 
     }
 
-    //init the location listView by category.
-    private void setLocationsListViewByCategory(){
-        shopsListview = new ArrayList<>();
-        foodListview = new ArrayList<>();
-        servicesListview = new ArrayList<>();
-        favoriteListview = new ArrayList<>();
+    private void setFullLocationListFromDB(String structureName) {
 
-        Intent intent = getIntent();
-        ArrayList<Location> locationArrayList = (ArrayList<Location>)intent.getSerializableExtra("LOCATION_LIST");
-
-        //init ArrayLists to their category.
-        for(int i = 0; i < locationArrayList.size(); i++){
-            switch (locationArrayList.get(i).getCategory()){
-                case "shops":
-                    shopsListview.add(locationArrayList.get(i).getName());
-                    break;
-                case "food":
-                    foodListview.add(locationArrayList.get(i).getName());
-                    break;
-                case "services":
-                    servicesListview.add(locationArrayList.get(i).getName());
-                    break;
-            }
-        }
-        setFavorites();
-    }
-
-    //read users favorite locations from database.
-    private void setFavorites(){
-        FirebaseAuth mAuth = FirebaseAuth.getInstance();
-        String userId = mAuth.getUid();
-        final DatabaseReference usersFavoriteRef = FirebaseDatabase.getInstance().getReference()
-                .child("users-favorites").child(userId);
-        usersFavoriteRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        DatabaseReference locationsRef = FirebaseDatabase.getInstance().getReference()
+                .child("structures").child(structureName).child("locations");
+        locationsRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                shopsListview = new ArrayList<>();
+                foodListview = new ArrayList<>();
+                servicesListview = new ArrayList<>();
+
                 for(DataSnapshot ds : dataSnapshot.getChildren()){
-                    favoriteListview.add(ds.child("location-name").getValue().toString());
+
+                    switch (ds.child("category").getValue().toString()){
+                        case "shops":
+                            shopsListview.add(ds.child("name").getValue().toString());
+                            break;
+                        case "food":
+                            foodListview.add(ds.child("name").getValue().toString());
+                            break;
+                        case "services":
+                            servicesListview.add(ds.child("name").getValue().toString());
+                            break;
+                    }
                 }
+
             }
 
             @Override
@@ -111,14 +102,7 @@ public class StructureInfoActivity extends AppCompatActivity {
                 expandableListviewAdapter.clear();
                 expandableListviewAdapter.addAll(servicesListview);
                 break;
-            case R.id.favorite_expandable:
-                if(favoriteListview.size() == 0) {
-                    Toast.makeText(this, "Add some favorites to you list", Toast.LENGTH_LONG).show();
-                } else {
-                    expandableListviewAdapter.clear();
-                    expandableListviewAdapter.addAll(favoriteListview);
-                }
-                break;
+
         }
     }
 }

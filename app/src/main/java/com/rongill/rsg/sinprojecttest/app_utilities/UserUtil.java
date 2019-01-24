@@ -11,6 +11,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.rongill.rsg.sinprojecttest.basic_objects.MyCalendar;
 import com.rongill.rsg.sinprojecttest.basic_objects.User;
 import com.rongill.rsg.sinprojecttest.navigation.MyBeacon;
 
@@ -22,7 +23,7 @@ public class UserUtil implements Serializable {
     private User currentUser;
 
 
-    public UserUtil(){
+    public  UserUtil(){
         FirebaseAuth mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
         currentUser = new User();
@@ -138,6 +139,12 @@ public class UserUtil implements Serializable {
             if(friend.getUserId().equals(userId)) return true;
         }
         return false;
+    }
+
+    public void saveUserLoginDate (MyCalendar myCalendar){
+        DatabaseReference userLoginDateRef = FirebaseDatabase.getInstance().getReference()
+                .child("users").child(mFirebaseUser.getUid()).child("recent-login");
+        userLoginDateRef.setValue(myCalendar);
     }
 
 

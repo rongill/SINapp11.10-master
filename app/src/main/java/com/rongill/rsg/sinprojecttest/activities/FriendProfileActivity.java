@@ -13,6 +13,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -32,6 +34,7 @@ import java.util.Map;
 
 public class FriendProfileActivity extends AppCompatActivity {
 
+    private static final int DYNAMIC_NAV_RESULT_CODE = 300;
     private User friend;
     private TextView friendName;
     private TextView connectionStatus;
@@ -48,6 +51,19 @@ public class FriendProfileActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         currentUser = (User)intent.getSerializableExtra("CURRENT_USER");
+        if (intent.getStringExtra("KEY_FROM_POKE_MESSAGE") != null){
+            DatabaseReference pokeMessageRef = FirebaseDatabase.getInstance().getReference()
+                    .child("users-inbox").child(currentUser.getUserId()).child(intent.getStringExtra("KEY_FROM_POKE_MESSAGE"));
+            pokeMessageRef.removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if(task.isSuccessful()){
+                        makeToast("poke message received from " + friend.getUsername() + ", want to navigate?");
+                    }
+                }
+            });
+        }
+
 
         setFriendInfoFromDb();
 
@@ -61,16 +77,14 @@ public class FriendProfileActivity extends AppCompatActivity {
         switch (v.getId()) {
             case R.id.poke_btn:
                 sendPokeRequest();
-                Toast.makeText(this, "poke sent to " + friend.getUsername(), Toast.LENGTH_SHORT).show();
-
                 break;
+
             case R.id.meetBtn:
-                Toast.makeText(this, "meet request sent to friend", Toast.LENGTH_SHORT).show();
                 sendNavigationRequest();
                 break;
+
             case R.id.sendLocatonBtn:
-                //TODO send users current location to friend inbox
-                Toast.makeText(this, "Location sent to friend", Toast.LENGTH_SHORT).show();
+                sendUserLocation();
                 break;
         }
     }
@@ -94,6 +108,7 @@ public class FriendProfileActivity extends AppCompatActivity {
         friendUserRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                friend.setUserId(dataSnapshot.getKey());
                 friend.setUsername(dataSnapshot.getValue(User.class).getUsername());
                 friend.setStatus(dataSnapshot.getValue(User.class).getStatus());
                 friendName.setText(friend.getUsername());
@@ -113,18 +128,69 @@ public class FriendProfileActivity extends AppCompatActivity {
                 , "poke", "pending");
         DatabaseReference friendInboxRef = FirebaseDatabase.getInstance().getReference()
                 .child("users-inbox").child(friend.getUserId());
-        friendInboxRef.push().setValue(message);
+        friendInboxRef.push().setValue(message).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isSuccessful()){
+                    makeToast("poke sent to " + friend.getUsername());
+                } else {
+                    makeToast("something went wrong...");
+                }
+            }
+        });
     }
 
     //send a RequestMassage to the friend with request type navigation.
     private void sendNavigationRequest(){
-        HashMap<String, String> newPost = new HashMap<>();
-        newPost.put("sender-uid", currentUser.getUserId());
-        newPost.put("sender-username", currentUser.getUsername());
+        //when a navigation in sent to the friend, close this activity and return to the main, onActivityResult in main activity should handle a return from here with the RequestMessage in the intent and activate a listener to the user navigation log if the friend started navigating.
+        RequestMessage dynamicNavRequest =
+                new RequestMessage(friend.getUserId(),
+                        currentUser.getUserId(),
+                        currentUser.getUsername(),
+                        "dynamic-navigation-request",
+                        "pending");
 
-        DatabaseReference friendNavigationLogRef = FirebaseDatabase.getInstance().getReference()
-                .child("user-navigation-log").child(friend.getUserId());
-        friendNavigationLogRef.push().setValue(newPost);
+        DatabaseReference friendInboxRef = FirebaseDatabase.getInstance().getReference()
+                .child("users-inbox").child(friend.getUserId());
+
+        String pushKey = friendInboxRef.push().getKey();
+        friendInboxRef.child(pushKey).setValue(dynamicNavRequest).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isSuccessful()){
+                    makeToast("meet request sent to " + friend.getUsername());
+                } else {
+                    makeToast("something went wrong...");
+                }
+            }
+        });
+
+        Intent intent = new Intent();
+        intent.putExtra("DYNAMIC_NAVIGATION_REQUEST_MESSAGE", dynamicNavRequest);
+        intent.putExtra("FRIEND_NAME", friend.getUsername());
+        intent.putExtra("NAVIGATION_LOG_KEY", pushKey);
+        setResult(DYNAMIC_NAV_RESULT_CODE, intent);
+        finish();
+    }
+
+    private void sendUserLocation(){
+        RequestMessage dynamicNavRequest = new RequestMessage(friend.getUserId(), currentUser.getUserId(), currentUser.getUsername(), "friend-location", "pending");
+        DatabaseReference friendInboxRef = FirebaseDatabase.getInstance().getReference()
+                .child("users-inbox").child(friend.getUserId());
+        friendInboxRef.push().setValue(dynamicNavRequest).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isSuccessful()){
+                    makeToast("your location was sent to " + friend.getUsername());
+                } else {
+                    makeToast("something went wrong...");
+                }
+            }
+        });
+    }
+
+    private void makeToast(String message){
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
 }

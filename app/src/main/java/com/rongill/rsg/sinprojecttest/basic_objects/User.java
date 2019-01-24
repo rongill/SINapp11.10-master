@@ -41,6 +41,7 @@ public class User implements Serializable {
     public void setCurrentBeacon(MyBeacon currentBeacon) {
         this.currentBeacon = currentBeacon;
         updateUserBeaconNameInDB(currentBeacon.getName());
+        this.currentBeacon.getBeaconDetailsDB();
     }
 
     public void setFriends(ArrayList<User> friendList){
@@ -114,30 +115,10 @@ public class User implements Serializable {
     }
 
     private void updateUserBeaconNameInDB(String beaconName){
-        DatabaseReference userBeaconRef = FirebaseDatabase.getInstance().getReference()
-                .child("users").child(FirebaseAuth.getInstance().getUid()).child("beacon");
-        userBeaconRef.setValue(beaconName);
-    }
-
-    public void setUserBeaconCoordinatesFromDB(){
-        DatabaseReference beaconRef = FirebaseDatabase.getInstance().getReference()
-                .child("beacons");
-        Query query = beaconRef.orderByChild("name").equalTo(currentBeacon.getName());
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for(DataSnapshot ds : dataSnapshot.getChildren()){
-                    Point p = new Point();
-                    p.setX(Integer.parseInt(ds.child("x").getValue().toString()));
-                    p.setY(Integer.parseInt(ds.child("y").getValue().toString()));
-                    currentBeacon.setCoordinates(p);
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+        if(FirebaseAuth.getInstance().getUid() != null) {
+            DatabaseReference userBeaconRef = FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(FirebaseAuth.getInstance().getUid()).child("beacon");
+            userBeaconRef.setValue(beaconName);
+        }
     }
 }
