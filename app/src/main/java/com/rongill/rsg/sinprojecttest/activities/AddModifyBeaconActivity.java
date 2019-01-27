@@ -28,12 +28,12 @@ public class AddModifyBeaconActivity extends AppCompatActivity {
 
     private EditText beaconNameEt, beaconFloorEt, beaconXEt, beaconYEt;
 
-    //TODO add documentation
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_modify_beacon);
 
+        //Define the window smaller.
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         getWindow().setLayout((int)(metrics.widthPixels*.8), (int)(metrics.heightPixels*.6));
@@ -54,6 +54,7 @@ public class AddModifyBeaconActivity extends AppCompatActivity {
             beaconYEt.setText(String.valueOf(beaconModifier.getCoordinates().getY()));
         }
 
+        //Set on click submit if all fields are filled.
         submitBeaconSettingsBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

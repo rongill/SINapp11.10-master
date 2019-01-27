@@ -32,6 +32,9 @@ public class NotificationReceiver extends BroadcastReceiver {
 
             intent.removeExtra("CONFIRMED_MESSAGE_KEY");
             intent.removeExtra("FRIEND_REQUEST_MESSAGE");
+
+            NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            manager.cancel(1);
         }
         // if the intent carry a message key then that means the user pressed deny on the notification, delete the message.
         else if(intent.getStringExtra("DENIED_MESSAGE_KEY") != null){
@@ -46,6 +49,7 @@ public class NotificationReceiver extends BroadcastReceiver {
 
                 intent.removeExtra("DENIED_MESSAGE_KEY");
                 intent.removeExtra("FRIEND_REQUEST_MESSAGE");
+
                 NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
                 manager.cancel(1);
             }

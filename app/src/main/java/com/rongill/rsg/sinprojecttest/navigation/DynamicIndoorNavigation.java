@@ -17,7 +17,7 @@ public class DynamicIndoorNavigation extends IndoorNavigation {
     private boolean hasArrived = false;
 
     public DynamicIndoorNavigation(MyBleScanner myBleScanner, User currentUser, BluetoothLeScanner scanner, Compass compass) {
-        super(currentUser, null, scanner, compass);
+        super(currentUser, new Location(), scanner, compass);
         this.dynamicBleScanner = myBleScanner;
     }
 
@@ -40,7 +40,7 @@ public class DynamicIndoorNavigation extends IndoorNavigation {
                         e.printStackTrace();
                     }
 
-                    currentUser.setCurrentBeacon(dynamicBleScanner.getClosestBeacon());
+                    currentUser.setCurrentBeacon(dynamicBleScanner.getNearestBeacon());
                     if(currentUser.getCurrentBeacon().getName().equals(destination.getBeaconName())){
                         hasArrived = true;
                         dynamicBleScanner.initLeScan(false);

@@ -2,6 +2,7 @@ package com.rongill.rsg.sinprojecttest.app_utilities;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -19,6 +20,7 @@ import java.io.Serializable;
 
 public class UserUtil implements Serializable {
 
+    private final String TAG = "UserUtil";
     private FirebaseUser mFirebaseUser;
     private User currentUser;
 
@@ -27,9 +29,12 @@ public class UserUtil implements Serializable {
         FirebaseAuth mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
         currentUser = new User();
+        Log.i(TAG, "user init started.");
         setCurrentUser();
+    }
 
-
+    public User getCurrentUser(){
+        return this.currentUser;
     }
 
     private void setCurrentUser(){
@@ -42,6 +47,8 @@ public class UserUtil implements Serializable {
                 currentUser.setUsername(dataSnapshot.getValue(User.class).getUsername());
                 currentUser.setUserType(dataSnapshot.getValue(User.class).getUserType());
                 currentUser.setStatus(dataSnapshot.getValue(User.class).getStatus());
+
+                Log.i(TAG, "user friends list creator started.");
                 updateFriendList();
             }
 
@@ -52,56 +59,18 @@ public class UserUtil implements Serializable {
         });
     }
 
-    //set the current users friend list
+    //set the current users friends UID list
     private void updateFriendList(){
+        Log.i(TAG, "fetching friend UID list from Database");
         DatabaseReference currentUserFriendsDb = FirebaseDatabase.getInstance().getReference()
-                .child("users-friends").child(mFirebaseUser.getUid());
+                .child("users-friends").child(currentUser.getUserId());
 
-        currentUserFriendsDb.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-                    DatabaseReference friendUserRef = FirebaseDatabase.getInstance().getReference()
-                            .child("users").child(dataSnapshot.getValue().toString());
-                    addFriend(dataSnapshot.getValue().toString(),friendUserRef);
-
-            }
-
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
-
-            }
-
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-    }
-
-    //add new friend in the friend list of current user.
-    private void addFriend(final String friendId, DatabaseReference friendUserRef){
-        friendUserRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        currentUserFriendsDb.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                User tempUser = new User();
-                tempUser.setUserId(friendId);
-                tempUser.setUsername(dataSnapshot.getValue(User.class).getUsername());
-                tempUser.setUserType(dataSnapshot.getValue(User.class).getUserType());
-                currentUser.addFriend(tempUser);
-                addFriendStatusListener(friendId);
+                for(DataSnapshot ds : dataSnapshot.getChildren()){
+                    currentUser.addFriend(ds.getValue().toString());
+                }
             }
 
             @Override
@@ -111,37 +80,18 @@ public class UserUtil implements Serializable {
         });
     }
 
-    //set the friend status according to DB
-    private void addFriendStatusListener(final String friendId){
-        DatabaseReference friendStatusRef = FirebaseDatabase.getInstance().getReference()
-                .child("users").child(friendId).child("status");
-        friendStatusRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                currentUser.setFriendStatusByUid(friendId, dataSnapshot.getValue().toString());
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    public User getCurrentUser(){
-        return this.currentUser;
-    }
-
-    //checks if friend in already in the friend list (before adding)
+    //checks if friend is already in the friend list (before sending a friend request from MainActivity)
     public boolean checkIfFriendExist(String userId){
-        for(User friend : currentUser.getFriends()){
-            if(friend.getUserId().equals(userId)) return true;
+        for(String friendUid : currentUser.getFriends()){
+            if(friendUid.equals(userId)) return true;
+            Log.w(TAG, friendUid + "already in users friend list, would not add.");
         }
         return false;
     }
 
+    //Saves the date from MainActivity onCreate.
     public void saveUserLoginDate (MyCalendar myCalendar){
+        Log.i(TAG, "login time saved in DB");
         DatabaseReference userLoginDateRef = FirebaseDatabase.getInstance().getReference()
                 .child("users").child(mFirebaseUser.getUid()).child("recent-login");
         userLoginDateRef.setValue(myCalendar);

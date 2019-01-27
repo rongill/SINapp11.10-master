@@ -89,6 +89,7 @@ public class BeaconListAdapter extends ArrayAdapter<MyBeacon> {
             String dateModifiedString = beacon.getDateModified().getDate() + " - " + beacon.getDateModified().getTime();
             viewHolder.beaconDateModifiedTv.setText(dateModifiedString);
 
+            //on modified pressed send the beacon to modify to AddModifyBeaconActivity
             viewHolder.modifyBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

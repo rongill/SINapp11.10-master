@@ -1,31 +1,21 @@
 package com.rongill.rsg.sinprojecttest.services;
-
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.app.TaskStackBuilder;
-import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
-
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
 import com.rongill.rsg.sinprojecttest.R;
 import com.rongill.rsg.sinprojecttest.activities.FriendProfileActivity;
 import com.rongill.rsg.sinprojecttest.activities.MainDrowerActivity;
-import com.rongill.rsg.sinprojecttest.app_utilities.InboxUtil;
 import com.rongill.rsg.sinprojecttest.basic_objects.MyCalendar;
 import com.rongill.rsg.sinprojecttest.basic_objects.RequestMessage;
 import com.rongill.rsg.sinprojecttest.basic_objects.User;
@@ -39,18 +29,11 @@ public class InboxService extends Service {
     private DatabaseReference userInboxRef;
     private User currentUser;
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-
-
-
-    }
 
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
 
-        User currentUser = (User)intent.getSerializableExtra("CURRENT_USER");
+        currentUser = (User)intent.getSerializableExtra("CURRENT_USER");
 
         userInboxRef = FirebaseDatabase.getInstance().getReference()
                 .child("users-inbox").child(currentUser.getUserId());

@@ -32,30 +32,18 @@ public class FriendListAdapter extends ArrayAdapter<String> {
         ImageView connectionStatus;
         TextView friendName;
     }
-
+//TODO use current user friend list generated in UserUtil class.
     public FriendListAdapter(final ArrayList<String> friendsUidList, Context context, DatabaseReference userFriendsRef){
-        super(context, R.layout.friend_list_layout, friendsUidList);
 
-        userFriendsRef.addChildEventListener(new ChildEventListener() {
+        super(context, R.layout.friend_list_layout, friendsUidList);
+        this.friendsUidList = friendsUidList;
+        this.mContext = context;
+
+        userFriendsRef.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 friendsUidList.add(dataSnapshot.getValue().toString());
                 FriendListAdapter.this.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
             }
 
             @Override
@@ -63,9 +51,6 @@ public class FriendListAdapter extends ArrayAdapter<String> {
 
             }
         });
-
-        this.friendsUidList = friendsUidList;
-        this.mContext = context;
     }
 
     @Override

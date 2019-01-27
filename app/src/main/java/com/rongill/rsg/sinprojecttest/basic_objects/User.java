@@ -20,7 +20,7 @@ import java.util.Objects;
 public class User implements Serializable {
 
     private String userId, status, username, userType;
-    private ArrayList<User> friends = new ArrayList<>();
+    private ArrayList<String> friendsUid = new ArrayList<>();
     private MyBeacon currentBeacon;
 
     public User(){}
@@ -44,25 +44,12 @@ public class User implements Serializable {
         this.currentBeacon.getBeaconDetailsDB();
     }
 
-    public void setFriends(ArrayList<User> friendList){
-        this.friends = friendList;
+    public ArrayList<String> getFriends(){
+        return this.friendsUid;
     }
 
-    public ArrayList<User> getFriends(){
-        return this.friends;
-    }
-
-    public void addFriend(User friend){
-        this.friends.add(friend);
-    }
-
-    public void setFriendStatusByUid(String friendUid, String newStatus){
-        for(int i=0; i<friends.size();i++){
-            if(friends.get(i).getUserId().equals(friendUid))
-                this.friends.get(i).setStatus(newStatus);
-
-        }
-
+    public void addFriend(String friendUid){
+        this.friendsUid.add(friendUid);
     }
 
     public String getUserId() {

@@ -108,9 +108,9 @@ public class FriendProfileActivity extends AppCompatActivity {
         friendUserRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                friend.setUserId(dataSnapshot.getKey());
                 friend.setUsername(dataSnapshot.getValue(User.class).getUsername());
                 friend.setStatus(dataSnapshot.getValue(User.class).getStatus());
+                //TODO if friend disconnected show last connected in a textview
                 friendName.setText(friend.getUsername());
                 connectionStatus.setText(friend.getStatus());
             }

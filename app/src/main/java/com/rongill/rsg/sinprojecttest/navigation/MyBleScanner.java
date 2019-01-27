@@ -6,7 +6,6 @@ import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
-import android.content.Context;
 import android.support.annotation.NonNull;
 
 import com.google.firebase.database.DataSnapshot;
@@ -23,11 +22,8 @@ public class MyBleScanner {
     private BluetoothLeScanner scanner;
     private ScanSettings scanSettings;
     private ArrayList<MyBeacon> scannedDeviceList = new ArrayList<>();
-    private MyBeacon closestBeacon;
+    private MyBeacon nearestBeacon;
 
-    public MyBleScanner(){}
-
-    //TODO use the scanCallback here for all scanning UC's
     public MyBleScanner(BluetoothManager bluetoothManager){
         BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
         //Create the scan settings
@@ -39,15 +35,11 @@ public class MyBleScanner {
         //Get the BLE scanner from the BT adapter
         this.scanner = bluetoothAdapter.getBluetoothLeScanner();
 
-        closestBeacon = new MyBeacon();
+        nearestBeacon = new MyBeacon();
     }
 
     public ArrayList<MyBeacon> getScannedDeviceList() {
         return scannedDeviceList;
-    }
-
-    public void setScannedDeviceList(ArrayList<MyBeacon> scannedDeviceList) {
-        this.scannedDeviceList = scannedDeviceList;
     }
 
     public BluetoothLeScanner getScanner() {
@@ -66,15 +58,21 @@ public class MyBleScanner {
         }
     }
 
+    public MyBeacon getNearestBeacon(){
 
-    public MyBeacon getClosestBeacon(){
-
-        return this.closestBeacon;
+        return this.nearestBeacon;
     }
 
-    public void setClosestBeacon(MyBeacon closestBeacon) {
-        this.closestBeacon = closestBeacon;
+    //put the closest beacon in the head of the list
+    private void setNearestBeacon() {
+        nearestBeacon = getScannedDeviceList().get(0);
+        for (MyBeacon tempBeacon: getScannedDeviceList()){
+            if(nearestBeacon.getRssi() < tempBeacon.getRssi()){
+                nearestBeacon = tempBeacon;
+            }
+        }
     }
+
 
     ScanCallback scanCallback = new ScanCallback() {
         @Override
@@ -86,14 +84,14 @@ public class MyBleScanner {
                 scannedBeacon.setName(result.getDevice().getName());
                 scannedBeacon.setRssi(result.getRssi());
 
-                getBeaconDataFromServer(scannedBeacon);
+                setBeaconDataFromServer(scannedBeacon);
 
 
             }
         }
     };
 
-    private void getBeaconDataFromServer(final MyBeacon scannedBeacon){
+    private void setBeaconDataFromServer(final MyBeacon scannedBeacon){
         DatabaseReference beaconRef = FirebaseDatabase.getInstance().getReference()
                 .child("beacons");
         Query beaconByNameQuery = beaconRef.orderByChild("name").equalTo(scannedBeacon.getName());
@@ -123,7 +121,7 @@ public class MyBleScanner {
                     getScannedDeviceList().add(scannedBeacon);
                 }
 
-                setClosestBeacon();
+                setNearestBeacon();
             }
 
             @Override
@@ -133,12 +131,5 @@ public class MyBleScanner {
         });
     }
 
-    //put the closest beacon in the head of the list
-    private void setClosestBeacon() {
-        for (MyBeacon tempBeacon: getScannedDeviceList()){
-            if(closestBeacon.getRssi() < tempBeacon.getRssi()){
-                closestBeacon = tempBeacon;
-            }
-        }
-    }
+
 }

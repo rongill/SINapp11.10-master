@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -23,6 +24,7 @@ import com.rongill.rsg.sinprojecttest.navigation.Point;
 
 public class DynamicNavigationService extends Service {
 
+    private final String TAG = "DynamicNavigationService";
     private Location destination;
     private Compass compass;
     private DynamicIndoorNavigation dynamicIndoorNavigation;
@@ -73,6 +75,7 @@ public class DynamicNavigationService extends Service {
                     compass.getUserLocationTv().setText("remote user is disconnected");
                     dynamicIndoorNavigation.stopNavigation(navigationLogPushKey);
                     stopSelf();
+                    Log.i(TAG, "Dynamic navigation stopped- remote user disconnected");
                 } else {
                     destination.setName(dataSnapshot.child("username").getValue().toString());
                     destination.setCategory("friend");
