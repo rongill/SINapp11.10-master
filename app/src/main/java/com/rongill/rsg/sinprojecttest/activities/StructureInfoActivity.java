@@ -33,6 +33,9 @@ public class StructureInfoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_structure_info);
 
+        //get the structure name from the intent and set the location LV of that structure.
+        final String structureName = getIntent().getStringExtra("STRUCTURE_NAME");
+
         final ListView expandableListview = (ListView)findViewById(R.id.expandable_listView);
         expandableListviewAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, new ArrayList<String>());
         expandableListview.setAdapter(expandableListviewAdapter);
@@ -40,14 +43,14 @@ public class StructureInfoActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(getBaseContext(), LocationInfoPage.class);
-                intent.putExtra("LOCATION_NAME", (String)expandableListview.getItemAtPosition(position));
+                String locationName = (String)expandableListview.getItemAtPosition(position);
+                intent.putExtra("LOCATION_NAME", locationName);
+                intent.putExtra("STRUCTURE", structureName);
                 startActivity(intent);
                 finish();
             }
         });
-
-        //get the structure name from the intent and set the location LV of that structure.
-        String structureName = getIntent().getStringExtra("STRUCTURE_NAME");
+        // set the location name strings in categories to display on the expendable ListView.
         setFullLocationListFromDB(structureName);
 
     }

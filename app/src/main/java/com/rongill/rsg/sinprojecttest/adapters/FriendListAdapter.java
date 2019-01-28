@@ -42,8 +42,10 @@ public class FriendListAdapter extends ArrayAdapter<String> {
         userFriendsRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                friendsUidList.add(dataSnapshot.getValue().toString());
-                FriendListAdapter.this.notifyDataSetChanged();
+                for(DataSnapshot ds : dataSnapshot.getChildren()) {
+                    friendsUidList.add(dataSnapshot.getValue().toString());
+                    FriendListAdapter.this.notifyDataSetChanged();
+                }
             }
 
             @Override

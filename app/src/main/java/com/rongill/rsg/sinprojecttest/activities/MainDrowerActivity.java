@@ -176,12 +176,14 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                     //if the scanner was able to scan SIN project beacons, set the TextView tot
                     if (myBleScanner.getScannedDeviceList().size() > 0) {
 
+                        mUserUtil.getCurrentUser().setCurrentBeacon(myBleScanner.getNearestBeacon());
+
                         String userLocationString = mUserUtil.getCurrentUser().getCurrentBeacon().getStructure() + " - "
                                 + mUserUtil.getCurrentUser().getCurrentBeacon().getFloor() + " - "
                                 + mUserUtil.getCurrentUser().getCurrentBeacon().getName();
                         userLocationTv.setText(userLocationString);
 
-                        mUserUtil.getCurrentUser().setCurrentBeacon(myBleScanner.getNearestBeacon());
+
                         setLocationList();
                         setUserInbox();
                         setFriendAdapter();
@@ -206,7 +208,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                     }
                 }
             };
-            handler.postDelayed(r, 3000);
+            handler.postDelayed(r, 5000);
 
 
 
