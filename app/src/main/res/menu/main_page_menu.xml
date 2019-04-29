@@ -20,6 +20,10 @@
         app:showAsAction="never"
         android:title="maintenance"
         android:visible="false"/>
+    <item android:id="@+id/management_settings"
+        app:showAsAction="never"
+        android:title="management"
+        android:visible="false"/>
 
 
 </menu>

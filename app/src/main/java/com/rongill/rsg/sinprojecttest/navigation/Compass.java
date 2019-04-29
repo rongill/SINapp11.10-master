@@ -20,7 +20,7 @@ public class Compass implements SensorEventListener, Serializable {
     private int oriantationNew;
 
     public SensorManager mSensorManager;
-    public TextView userLocationTv;
+    public TextView userLocationTv, titleTv;
     public ImageView compassImage;
 
     public Compass(){

@@ -71,6 +71,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+//TODO general todo list- 1. change the usecase of dynamic navigation to a send your location UC.
+//TODO 2. when user press meet on a friend that is CONNECTED he will get a list of close by meet-up points to choose from.
+//TODO 3. generate some reports on user connectivity, last changed beacons and locations etc.
+
 public class MainDrowerActivity extends AppCompatActivity implements SensorEventListener {
 
     private final String TAG = "MainActivity";
@@ -95,6 +99,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
     private ArrayList<Location> locationList;
 
     //user and friends data vars
+    public static boolean userIsSet = false;
     private UserUtil mUserUtil;
     private ListView friendsListView;
     private FriendListAdapter friendsListViewAdapter;
@@ -113,6 +118,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
 
         // init firebase auth status listener.
         mAuth = FirebaseAuth.getInstance();
+
         mFirebaseUser = mAuth.getCurrentUser();
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -172,21 +178,25 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                 @Override
                 public void run() {
                     myBleScanner.initLeScan(false);
+                    if(userIsSet) {
+                        setUserInbox();
+                        setFriendAdapter();
+                    }
+                    //TODO debug what is the best way to retrieve the closest beacon, here we scan the list of beacon created and return the max rssi beacon
+                    //if the scanner was able to scan SIN project beacons, set the TextView.
+                    if (myBleScanner.getNearestBeacon().getRssi() > -150) {
 
-                    //if the scanner was able to scan SIN project beacons, set the TextView tot
-                    if (myBleScanner.getScannedDeviceList().size() > 0) {
-
-                        mUserUtil.getCurrentUser().setCurrentBeacon(myBleScanner.getNearestBeacon());
+                        mUserUtil.getCurrentUser().setCurrentBeacon(myBleScanner.getNearestBeaconFromList());
 
                         String userLocationString = mUserUtil.getCurrentUser().getCurrentBeacon().getStructure() + " - "
                                 + mUserUtil.getCurrentUser().getCurrentBeacon().getFloor() + " - "
-                                + mUserUtil.getCurrentUser().getCurrentBeacon().getName();
+                                + mUserUtil.getCurrentUser().getCurrentBeacon().getName() + " - "
+                                + mUserUtil.getCurrentUser().getCurrentBeacon().getRssi();
                         userLocationTv.setText(userLocationString);
 
 
                         setLocationList();
-                        setUserInbox();
-                        setFriendAdapter();
+
 
                         //FAB transfers to Structure info page.
                         FloatingActionButton structureFabButton = findViewById(R.id.structure_page_fab);
@@ -197,8 +207,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                                 if (mUserUtil.getCurrentUser() != null && mUserUtil.getCurrentUser().getCurrentBeacon() != null) {
                                     Intent intent = new Intent(getBaseContext(), StructureInfoActivity.class);
                                     intent.putExtra("STRUCTURE_NAME", mUserUtil.getCurrentUser().getCurrentBeacon().getStructure());
-                                    //TODO start activity for result here?
-                                    startActivity(intent);
+                                    startActivityForResult(intent, NAVIGATION_REQUEST_CODE);
                                 }
                             }
                         });
@@ -208,8 +217,8 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                     }
                 }
             };
-            handler.postDelayed(r, 5000);
 
+            handler.postDelayed(r, 3000);
 
 
             //when image pressed, the scanning process starts/stops for 3 sec
@@ -219,6 +228,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
 
                     mUserUtil.getCurrentUser().setCurrentBeacon(new MyBeacon());
                     myBleScanner.getScannedDeviceList().clear();
+                    myBleScanner.getNearestBeacon().setRssi(-150);
                     userLocationTv.setText("Scanning...");
 
                     myBleScanner.initLeScan(true);
@@ -249,6 +259,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
 
         //set visible to the maintenance item if user is a maintenance user.
         final MenuItem maintenanceItem = menu.findItem(R.id.maintenance_settings);
+        final MenuItem managementItem = menu.findItem(R.id.management_settings);
 
         //set the maintenance menu item visibility if user is a maintenance user.
         if (mAuth.getCurrentUser() != null) {
@@ -259,6 +270,9 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     if (dataSnapshot.getValue().toString().equals("maintenance")) {
                         maintenanceItem.setVisible(true);
+                    }
+                    else if (dataSnapshot.getValue().toString().equals("management")){
+                        managementItem.setVisible(true);
                     }
                 }
 
@@ -321,9 +335,16 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                 startActivity(new Intent(this, CreateUserProfileActivity.class));
                 break;
             case R.id.maintenance_settings:
-                Intent intent = new Intent(this, LocationSettingActivity.class);
-                intent.putExtra("USER", mUserUtil.getCurrentUser());
-                startActivity(intent);
+                Intent maintenanceIntent = new Intent(this, LocationSettingActivity.class);
+                maintenanceIntent.putExtra("USER", mUserUtil.getCurrentUser());
+                startActivity(maintenanceIntent);
+                break;
+
+            case R.id.management_settings:
+                Intent managementIntent = new Intent(this, ManagementActivity.class);
+                managementIntent.putExtra("USER", mUserUtil.getCurrentUser());
+                startActivity(managementIntent);
+                break;
 
 
         }
@@ -366,7 +387,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        setConnectionStatus(false);
+        if(mAuth.getCurrentUser() != null ) setConnectionStatus(false);
         if(staticIndoorNavigation != null && !staticIndoorNavigation.hasArrived){
             staticIndoorNavigation.stopNavigation();
         }
@@ -492,7 +513,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 //by clicking one of the searched location, will be transfered to the location page.
                 String locationName = (String) suggestionsListView.getItemAtPosition(position);
-                Intent intent = new Intent(getBaseContext(), LocationInfoPage.class);
+                Intent intent = new Intent(getBaseContext(), LocationInfoActivity.class);
                 intent.putExtra("LOCATION_NAME", locationName);
                 intent.putExtra("STRUCTURE", mUserUtil.getCurrentUser().getCurrentBeacon().getStructure());
                 startActivityForResult(intent, NAVIGATION_REQUEST_CODE);
@@ -688,21 +709,47 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
             }
         }
 
-        //handles static/dynamic navigation result codes from LocationInfoPage & FriendProfileActivity
+        //handles static/dynamic navigation result codes from LocationInfoActivity & FriendProfileActivity
         //pull the destination from the Intent, create a static navigation object, start the navigation
         switch (resultCode) {
             case STATIC_NAV_RESULT_CODE:
                 Bundle extras = data.getExtras();
                 if (extras != null) {
-                    Location destination = (Location) extras.getSerializable("LOCATION");
+
+                    final Location destination = (Location) extras.getSerializable("LOCATION");
+
+                    compass.titleTv = (TextView) findViewById(R.id.action_display_view);
                     compass.setUserLocationTv((TextView) findViewById(R.id.user_location_TV));
-                    staticIndoorNavigation = new StaticIndoorNavigation(getBaseContext(), myBleScanner, mUserUtil.getCurrentUser(),
-                                    destination, myBleScanner.getScanner(), compass);
-                    staticIndoorNavigation.startNavigation();
-                    Log.i(TAG, "Static navigation started");
+
+                    String displayString = "Navigation to " + destination.getName() + "started";
+                    compass.titleTv.setText(displayString);
+                    compass.compassImage.setClickable(false);
+
+                    Map<String, String> newPost = new HashMap<>();
+                    newPost.put("status", "started");
+                    newPost.put("navigation-type", "static");
+
+                    DatabaseReference userNavigationLogRef = FirebaseDatabase.getInstance().getReference()
+                            .child("users-navigation-log").child(mUserUtil.getCurrentUser().getUserId());
+
+                    final String navigationLogKey = userNavigationLogRef.push().getKey();
+
+                    userNavigationLogRef.child(navigationLogKey).setValue(newPost);
+                    userNavigationLogRef.child(navigationLogKey).child("date-started").setValue(new MyCalendar());
+                    userNavigationLogRef.child(navigationLogKey).child("destination").setValue(destination).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            staticIndoorNavigation = new StaticIndoorNavigation(getBaseContext(), mUserUtil.getCurrentUser(),destination, compass, navigationLogKey);
+                            staticIndoorNavigation.startNavigation();
+                            Log.i(TAG, "Static navigation started");
+                        }
+                    });
+
+
                 }
                 break;
                 //coming back from the friend profile page, set the users navigation log entry
+            //TODO prevent multipul dynamic nav request.
             case DYNAMIC_NAV_RESULT_CODE:
                 final RequestMessage message= (RequestMessage)data.getSerializableExtra("DYNAMIC_NAVIGATION_REQUEST_MESSAGE");
 
@@ -729,7 +776,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
 
                             if (dataSnapshot.child("status").getValue().toString().equals("confirmed")) {
                                 Intent intent = new Intent(getBaseContext(), DynamicNavigationService.class);
-                                intent.putExtra("NAVIGATION_LOG_KEY", pushKey);
+                                intent.putExtra("NAVIGATION_RM_KEY", pushKey);
                                 intent.putExtra("INITIATOR", true);
                                 intent.putExtra("CURRENT_USER", mUserUtil.getCurrentUser());
                                 intent.putExtra("DYNAMIC_NAVIGATION_REQUEST_MESSAGE", message);
@@ -773,7 +820,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
             newPost.put("navigation-type", "dynamic");
 
             DatabaseReference userNavigationLogRef = FirebaseDatabase.getInstance().getReference()
-                    .child("users-navigation-log").child(mUserUtil.getCurrentUser().getUserId());
+                    .child("users-navigation-log").child(dynamicNavRequestMessage.getReceiverUid());
 
             String pushKey = userNavigationLogRef.push().getKey();
             userNavigationLogRef.child(pushKey).setValue(newPost);
@@ -789,9 +836,12 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
             query.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    for(DataSnapshot ds: dataSnapshot.getChildren()){
-                        friendNavigationLogRef.child(ds.getKey()).child("status").setValue("confirmed");
-                        Log.d(TAG, "Dynamic navigation- status at initiator side changed to confirmed.");
+                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                        MyCalendar dateStarted = dataSnapshot.child("date-started").getValue(MyCalendar.class);
+                        if (dateStarted.timeDiffInSeconds(new MyCalendar()) < 900) {
+                            friendNavigationLogRef.child(ds.getKey()).child("status").setValue("confirmed");
+                            Log.d(TAG, "Dynamic navigation- status at initiator side changed to confirmed.");
+                        }
                     }
                 }
 
@@ -801,7 +851,8 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                 }
             });
 
-
+//TODO make DYNAMIC_NAVIGATION_REQUEST_MESSAGE shorter
+            //TODO need to make sure the app don't crash because of getCurrentUser race condition
             Intent navigationServiceIntent = new Intent(this, DynamicNavigationService.class);
             intent.putExtra("NAVIGATION_LOG_KEY", pushKey);
             intent.putExtra("CURRENT_USER", mUserUtil.getCurrentUser());

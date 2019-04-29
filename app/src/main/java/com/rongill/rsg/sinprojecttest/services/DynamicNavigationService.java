@@ -17,17 +17,18 @@ import com.google.firebase.database.ValueEventListener;
 import com.rongill.rsg.sinprojecttest.basic_objects.RequestMessage;
 import com.rongill.rsg.sinprojecttest.basic_objects.User;
 import com.rongill.rsg.sinprojecttest.navigation.Compass;
-import com.rongill.rsg.sinprojecttest.navigation.DynamicIndoorNavigation;
 import com.rongill.rsg.sinprojecttest.navigation.Location;
 import com.rongill.rsg.sinprojecttest.navigation.MyBleScanner;
 import com.rongill.rsg.sinprojecttest.navigation.Point;
+import com.rongill.rsg.sinprojecttest.navigation.StaticIndoorNavigation;
 
 public class DynamicNavigationService extends Service {
 
-    private final String TAG = "DynamicNavigationService";
+    private final String TAG = "DynamicNavService";
     private Location destination;
     private Compass compass;
-    private DynamicIndoorNavigation dynamicIndoorNavigation;
+    private User currentUser;
+    private StaticIndoorNavigation staticIndoorNavigation;
     private boolean navigationStarted = false;
     private String navigationLogPushKey;
 
@@ -36,14 +37,10 @@ public class DynamicNavigationService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         // get the current user, message and the compass for the navigation.
-        User currentUser = (User) intent.getSerializableExtra("CURRENT_USER");
+        currentUser = (User) intent.getSerializableExtra("CURRENT_USER");
         RequestMessage navigationRequestMessage = (RequestMessage) intent.getSerializableExtra("DYNAMIC_NAVIGATION_REQUEST_MESSAGE");
         compass = (Compass)intent.getSerializableExtra("COMPASS");
         navigationLogPushKey = intent.getStringExtra("NAVIGATION_LOG_KEY");
-
-        MyBleScanner myBleScanner = new MyBleScanner((BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE));
-
-        dynamicIndoorNavigation = new DynamicIndoorNavigation(myBleScanner, currentUser, myBleScanner.getScanner(), compass);
 
         //if this user is the initiator that sent the request in the first place, the init destination should receive the receiver UID to set the destination.
         if(intent.getBooleanExtra("INITIATOR", false)) {
@@ -73,9 +70,9 @@ public class DynamicNavigationService extends Service {
                 //if beacon is changed, init the beacon data to this destination.
                 if(dataSnapshot.child("status").toString().equals("disconnected")) {
                     compass.getUserLocationTv().setText("remote user is disconnected");
-                    dynamicIndoorNavigation.stopNavigation(navigationLogPushKey);
+                    staticIndoorNavigation.stopNavigation();
                     stopSelf();
-                    Log.i(TAG, "Dynamic navigation stopped- remote user disconnected");
+                    Log.i(TAG, "Dynamic navigation stopped-remote user disconnected");
                 } else {
                     destination.setName(dataSnapshot.child("username").getValue().toString());
                     destination.setCategory("friend");
@@ -106,13 +103,17 @@ public class DynamicNavigationService extends Service {
                     destination.setStructure(ds.child("structure").getValue().toString());
                     destination.setFloor(ds.child("floor").getValue().toString());
 
-                    dynamicIndoorNavigation.setDestination(destination);
-
                     //if this is the first time read, start the navigation, otherwise only update the destination as above.
                     if(!navigationStarted){
                         navigationStarted = true;
-                        dynamicIndoorNavigation.startNavigation();
+                        staticIndoorNavigation = new StaticIndoorNavigation(getBaseContext(), currentUser, destination, compass, navigationLogPushKey);
+                        staticIndoorNavigation.startNavigation();
                     }
+
+                    else
+                        staticIndoorNavigation.setDestination(destination);
+
+
                 }
             }
 

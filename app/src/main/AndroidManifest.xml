@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.rongill.rsg.sinprojecttest">
-
     <!-- To auto-complete the email text field in the login form with the user's emails -->
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.READ_PROFILE" />
@@ -23,12 +22,17 @@
         android:supportsRtl="false"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
+
+        <activity
+            android:name=".activities.ManagementActivity"
+            android:label="@string/title_activity_management"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".activities.LoginActivity" />
         <activity android:name=".activities.SignupActivity" />
         <activity android:name=".activities.CreateUserProfileActivity" />
         <activity
             android:name=".activities.FriendProfileActivity"
-            android:parentActivityName=".activities.MainDrowerActivity"/>
+            android:parentActivityName=".activities.MainDrowerActivity" />
         <activity
             android:name=".activities.MainDrowerActivity"
             android:theme="@style/AppTheme">
@@ -38,7 +42,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.LocationInfoPage" />
+        <activity android:name=".activities.LocationInfoActivity" />
         <activity android:name=".activities.StructureInfoActivity" />
         <activity android:name=".activities.LocationSettingActivity" />
         <activity
@@ -47,11 +51,15 @@
         <activity android:name=".activities.BeaconSettingActivity" />
         <activity
             android:name=".activities.AddModifyBeaconActivity"
-            android:theme="@style/AppTheme.WindowOverActivityPopupTheme" />
-        <service android:name=".services.DynamicNavigationService"/>
-        <receiver android:name=".services.NotificationReceiver"/>
-        <service android:name=".services.InboxService"/>
+            android:theme="@style/AppTheme.WindowOverActivityPopupTheme"/>
+        <activity android:name=".activities.MessageBox"
+            android:theme="@style/AppTheme.WindowOverActivityPopupTheme"/>
 
+        <service android:name=".services.DynamicNavigationService" />
+
+        <receiver android:name=".services.NotificationReceiver" />
+
+        <service android:name=".services.InboxService" />
     </application>
 
 </manifest>

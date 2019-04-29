@@ -53,6 +53,7 @@ public class NotificationReceiver extends BroadcastReceiver {
                 NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
                 manager.cancel(1);
             }
+
             //if the notification denied was from a dynamic navigation request, delete the message.
             if(intent.getSerializableExtra("DYNAMIC_NAVIGATION_REQUEST_MESSAGE") != null){
                 RequestMessage message = (RequestMessage) intent.getSerializableExtra("DYNAMIC_NAVIGATION_REQUEST_MESSAGE");

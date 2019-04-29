@@ -19,6 +19,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.rongill.rsg.sinprojecttest.basic_objects.MaintenanceUser;
 import com.rongill.rsg.sinprojecttest.basic_objects.MyCalendar;
@@ -35,7 +36,6 @@ public class LocationSettingActivity extends AppCompatActivity {
     private LocationListAdapter locationListAdapter;
     private ArrayList<Location> locations;
     private MaintenanceUser maintenanceUser;
-    boolean readStructureComplete = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,11 +64,11 @@ public class LocationSettingActivity extends AppCompatActivity {
                 tempUser.getUserId(), tempUser.getUsername(),
                 tempUser.getStatus(), tempUser.getUserType(), "");
         DatabaseReference maintenanceUserRef = FirebaseDatabase.getInstance().getReference()
-                .child("maintenance-users").child(maintenanceUser.getUserId());
+                .child("users").child(maintenanceUser.getUserId()).child("structure-related");
         maintenanceUserRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                maintenanceUser.setStructure(dataSnapshot.child("structure").getValue().toString());
+                maintenanceUser.setStructure(dataSnapshot.getValue().toString());
                 setLocationsList();
             }
 
@@ -77,6 +77,7 @@ public class LocationSettingActivity extends AppCompatActivity {
 
             }
         });
+
 
 
 
@@ -157,7 +158,7 @@ public class LocationSettingActivity extends AppCompatActivity {
 
                 tempLocation.setName(dataSnapshot.getValue(Location.class).getName());
                 tempLocation.setCategory(dataSnapshot.getValue(Location.class).getCategory());
-                tempLocation.setBeaconName(dataSnapshot.getValue(Location.class).getBeaconName());
+                tempLocation.setBeaconName(dataSnapshot.child("beacon").getValue().toString());
                 tempLocation.setFloor(dataSnapshot.getValue(Location.class).getFloor());
                 tempLocation.setDateModified(dataSnapshot.child("date-modified").getValue(MyCalendar.class));
 

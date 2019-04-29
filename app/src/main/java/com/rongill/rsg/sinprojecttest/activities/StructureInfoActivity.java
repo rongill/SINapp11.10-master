@@ -2,31 +2,29 @@ package com.rongill.rsg.sinprojecttest.activities;
 
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-import com.rongill.rsg.sinprojecttest.navigation.Location;
 import com.rongill.rsg.sinprojecttest.R;
 
 import java.util.ArrayList;
 
 public class StructureInfoActivity extends AppCompatActivity {
 
-    private ArrayList<String> shopsListview, foodListview, servicesListview, favoriteListview;
+    private ArrayList<String> shopsListview, foodListview, servicesListview;
     private ArrayAdapter<String> expandableListviewAdapter;
+    private static final int NAVIGATION_REQUEST_CODE = 100;
+    private static final int STATIC_NAV_RESULT_CODE = 200;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,17 +40,26 @@ public class StructureInfoActivity extends AppCompatActivity {
         expandableListview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(getBaseContext(), LocationInfoPage.class);
+                Intent intent = new Intent(getBaseContext(), LocationInfoActivity.class);
                 String locationName = (String)expandableListview.getItemAtPosition(position);
                 intent.putExtra("LOCATION_NAME", locationName);
                 intent.putExtra("STRUCTURE", structureName);
-                startActivity(intent);
-                finish();
+                startActivityForResult(intent, NAVIGATION_REQUEST_CODE);
+
             }
         });
         // set the location name strings in categories to display on the expendable ListView.
         setFullLocationListFromDB(structureName);
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode == 200){
+            setResult(STATIC_NAV_RESULT_CODE, data);
+            finish();
+        }
     }
 
     private void setFullLocationListFromDB(String structureName) {

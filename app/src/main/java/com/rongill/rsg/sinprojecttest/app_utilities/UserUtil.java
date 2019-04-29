@@ -12,6 +12,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.rongill.rsg.sinprojecttest.activities.MainDrowerActivity;
 import com.rongill.rsg.sinprojecttest.basic_objects.MyCalendar;
 import com.rongill.rsg.sinprojecttest.basic_objects.User;
 import com.rongill.rsg.sinprojecttest.navigation.MyBeacon;
@@ -71,6 +72,7 @@ public class UserUtil implements Serializable {
                 for(DataSnapshot ds : dataSnapshot.getChildren()){
                     currentUser.addFriend(ds.getValue().toString());
                 }
+                MainDrowerActivity.userIsSet = true;
             }
 
             @Override

@@ -14,15 +14,13 @@ public abstract class IndoorNavigation {
     protected User currentUser;
     protected Location destination;
     protected Compass compass;
-    protected BluetoothLeScanner scanner;
     protected float distance, directionAzimuth;
 
 
-    public IndoorNavigation(User currentUser, Location destination, BluetoothLeScanner scanner, Compass compass){
+    public IndoorNavigation(User currentUser, Location destination, Compass compass){
         this.currentUser = currentUser;
         this.destination = destination;
         this.compass = compass;
-        this.scanner = scanner;
         this.distance = 0;
         this.directionAzimuth = 0;
     }

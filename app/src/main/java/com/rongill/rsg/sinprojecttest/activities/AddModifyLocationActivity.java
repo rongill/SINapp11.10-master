@@ -27,6 +27,7 @@ import java.util.HashMap;
 
 public class AddModifyLocationActivity extends Activity {
 
+    //TODO add documentation
     private EditText locationNameEt, locationCategoryEt, beaconEt, xAxisEt, yAxisEt, floorEt;
 
     @Override

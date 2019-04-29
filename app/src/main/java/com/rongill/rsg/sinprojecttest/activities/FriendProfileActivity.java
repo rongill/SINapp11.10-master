@@ -168,7 +168,7 @@ public class FriendProfileActivity extends AppCompatActivity {
         Intent intent = new Intent();
         intent.putExtra("DYNAMIC_NAVIGATION_REQUEST_MESSAGE", dynamicNavRequest);
         intent.putExtra("FRIEND_NAME", friend.getUsername());
-        intent.putExtra("NAVIGATION_LOG_KEY", pushKey);
+        intent.putExtra("NAVIGATION_RM_KEY", pushKey);
         setResult(DYNAMIC_NAV_RESULT_CODE, intent);
         finish();
     }

@@ -32,7 +32,6 @@ public class FriendListAdapter extends ArrayAdapter<String> {
         ImageView connectionStatus;
         TextView friendName;
     }
-//TODO use current user friend list generated in UserUtil class.
     public FriendListAdapter(final ArrayList<String> friendsUidList, Context context, DatabaseReference userFriendsRef){
 
         super(context, R.layout.friend_list_layout, friendsUidList);
@@ -43,7 +42,7 @@ public class FriendListAdapter extends ArrayAdapter<String> {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for(DataSnapshot ds : dataSnapshot.getChildren()) {
-                    friendsUidList.add(dataSnapshot.getValue().toString());
+                    friendsUidList.add(ds.getValue().toString());
                     FriendListAdapter.this.notifyDataSetChanged();
                 }
             }
@@ -96,7 +95,7 @@ public class FriendListAdapter extends ArrayAdapter<String> {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                viewHolder.friendName.setText(dataSnapshot.getValue(User.class).getUsername());
+                viewHolder.friendName.setText(dataSnapshot.child("username").getValue().toString());
 
                 switch (dataSnapshot.getValue(User.class).getStatus()) {
                     case "connected":

@@ -23,7 +23,7 @@ import com.rongill.rsg.sinprojecttest.R;
 import com.rongill.rsg.sinprojecttest.navigation.Location;
 import com.rongill.rsg.sinprojecttest.navigation.Point;
 
-public class LocationInfoPage extends AppCompatActivity {
+public class LocationInfoActivity extends AppCompatActivity {
 
     private static final int STATIC_NAV_RESULT_CODE = 200;
 
@@ -85,7 +85,7 @@ public class LocationInfoPage extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for(DataSnapshot ds : dataSnapshot.getChildren()) {
-                    thisLocation.setBeaconName(ds.getValue(Location.class).getBeaconName());
+                    thisLocation.setBeaconName(ds.child("beacon").getValue().toString());
                     thisLocation.setName(ds.getValue(Location.class).getName());
                     thisLocation.setCategory(ds.getValue(Location.class).getCategory());
                     thisLocation.setFloor(ds.getValue(Location.class).getFloor());
