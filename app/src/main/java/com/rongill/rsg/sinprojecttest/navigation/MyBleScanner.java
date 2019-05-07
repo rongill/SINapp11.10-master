@@ -37,6 +37,7 @@ public class MyBleScanner {
 
         nearestBeacon = new MyBeacon();
         nearestBeacon.setRssi(-150);
+        nearestBeacon.setName("");
 
     }
 

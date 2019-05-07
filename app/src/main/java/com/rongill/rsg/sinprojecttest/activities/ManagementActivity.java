@@ -8,6 +8,8 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.InputType;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -18,6 +20,8 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -26,6 +30,7 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.rongill.rsg.sinprojecttest.R;
 import com.rongill.rsg.sinprojecttest.basic_objects.ManagementUser;
+import com.rongill.rsg.sinprojecttest.basic_objects.MyCalendar;
 import com.rongill.rsg.sinprojecttest.basic_objects.User;
 
 import java.util.HashMap;
@@ -57,12 +62,14 @@ public class ManagementActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent messageBoxIntent = new Intent(getBaseContext(), MessageBox.class);
-                messageBoxIntent.putExtra(managementUser.getStructure(),"STRUCTURE");
-                startActivity(messageBoxIntent);
+                //Intent messageBoxIntent = new Intent(getBaseContext(), MessageBox.class);
+                //messageBoxIntent.putExtra(managementUser.getStructure(),"STRUCTURE");
+                createMessageDialog();
             }
         });
     }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -143,7 +150,7 @@ public class ManagementActivity extends AppCompatActivity {
         final EditText emailInput = new EditText(this);
         emailInput.setHint("Enter Email");
         emailInput.setText("");
-        emailInput.setSingleLine();
+        emailInput.setSingleLine(true);
         FrameLayout container = new FrameLayout(this);
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
         params.leftMargin = 10;
@@ -205,6 +212,62 @@ public class ManagementActivity extends AppCompatActivity {
 
     private void makeToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+    }
+
+    private void createMessageDialog() {
+        final EditText input = new EditText(this);
+        input.setHint("Enter Email");
+        input.setText("");
+        input.setSingleLine(false);
+        input.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        input.setLines(4);
+        input.setMaxLines(5);
+        input.setGravity(Gravity.START|Gravity.TOP);
+        input.setHorizontalScrollBarEnabled(false);
+        FrameLayout container = new FrameLayout(this);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.leftMargin = 10;
+        params.rightMargin = 10;
+        input.setLayoutParams(params);
+        container.addView(input);
+
+        final AlertDialog.Builder postMessageAD = new AlertDialog.Builder(this);
+        postMessageAD.setView(container);
+        postMessageAD.setTitle("Distribute message");
+        postMessageAD.setPositiveButton("SEND", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if(!input.getText().toString().equals("")){
+                    DatabaseReference structureNotificationsRef = FirebaseDatabase.getInstance().getReference()
+                            .child("structures").child(managementUser.getStructure()).child("management-notifications");
+
+                    String pushKey = structureNotificationsRef.push().getKey();
+                    structureNotificationsRef.child(pushKey).child("message").setValue(input.getText().toString());
+                    structureNotificationsRef.child(pushKey).child("date-posted").setValue(new MyCalendar()).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if(task.isSuccessful())
+                                makeToast("message posted!");
+                        }
+                    });
+
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        postMessageAD.setNegativeButton("CLOSE", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        postMessageAD.show();
+
+
+
+
     }
 
     //TODO make fab click to open message box DEBUG

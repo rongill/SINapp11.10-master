@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.rongill.rsg.sinprojecttest">
+
     <!-- To auto-complete the email text field in the login form with the user's emails -->
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.READ_PROFILE" />
@@ -22,6 +23,10 @@
         android:supportsRtl="false"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
+        <service
+            android:name=".services.LiveLocationService"
+            android:enabled="true"
+            android:exported="true"></service>
 
         <activity
             android:name=".activities.ManagementActivity"
@@ -51,15 +56,17 @@
         <activity android:name=".activities.BeaconSettingActivity" />
         <activity
             android:name=".activities.AddModifyBeaconActivity"
-            android:theme="@style/AppTheme.WindowOverActivityPopupTheme"/>
-        <activity android:name=".activities.MessageBox"
-            android:theme="@style/AppTheme.WindowOverActivityPopupTheme"/>
+            android:theme="@style/AppTheme.WindowOverActivityPopupTheme" />
+        <activity
+            android:name=".activities.MessageBox"
+            android:theme="@style/AppTheme.WindowOverActivityPopupTheme" />
 
         <service android:name=".services.DynamicNavigationService" />
 
         <receiver android:name=".services.NotificationReceiver" />
 
         <service android:name=".services.InboxService" />
+        <service android:name=".services.StructureMessageBoxService" />
     </application>
 
 </manifest>

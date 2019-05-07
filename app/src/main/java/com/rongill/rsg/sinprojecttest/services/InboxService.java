@@ -30,6 +30,7 @@ public class InboxService extends Service {
     private User currentUser;
 
 
+
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
 
@@ -121,18 +122,18 @@ public class InboxService extends Service {
                             Intent dynamicNavRequestConfirmed = new Intent(getBaseContext(), MainDrowerActivity.class);
                             dynamicNavRequestConfirmed.putExtra("CONFIRMED_MESSAGE_KEY",dataSnapshot.getKey());
                             dynamicNavRequestConfirmed.putExtra("DYNAMIC_NAVIGATION_REQUEST_MESSAGE", tempMessage);
-                            dynamicNavRequestConfirmed.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                            dynamicNavRequestConfirmed.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
                             //Navigation denied intent, send to notification receiver and delete the message.
-                            Intent dynamicNavDeniedIntent = new Intent(getBaseContext(), NotificationReceiver.class);
-                            dynamicNavDeniedIntent.putExtra("DENIED_MESSAGE_KEY", dataSnapshot.getKey());
-                            dynamicNavDeniedIntent.putExtra("DYNAMIC_NAVIGATION_REQUEST_MESSAGE", tempMessage);
+                            Intent dynamicNavRequestDenied = new Intent(getBaseContext(), NotificationReceiver.class);
+                            dynamicNavRequestDenied.putExtra("DENIED_MESSAGE_KEY", dataSnapshot.getKey());
+                            dynamicNavRequestDenied.putExtra("DYNAMIC_NAVIGATION_REQUEST_MESSAGE", tempMessage);
 
                             //setting the action on the buttons of the notifications.
                             PendingIntent actionConfirmed = PendingIntent.getActivity(getBaseContext(), 0,
                                     dynamicNavRequestConfirmed, PendingIntent.FLAG_UPDATE_CURRENT);
                             PendingIntent actionDenied = PendingIntent.getActivity(getBaseContext(), 0,
-                                    dynamicNavDeniedIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                                    dynamicNavRequestDenied, PendingIntent.FLAG_UPDATE_CURRENT);
 
                             NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getBaseContext(), "SIN")
                                     .setContentTitle("Navigate to friend")

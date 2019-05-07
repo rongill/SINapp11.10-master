@@ -124,7 +124,7 @@ public class StaticIndoorNavigation extends IndoorNavigation {
                         //rotate the image of the compass according to the directionAzimuth in degrees, calculated in the above method.
                         compass.compassImage.setRotation(90 + directionAzimuth);
 
-                        String distanceToDestination = "distance to " + destination.getName() + " : " + String.valueOf((int) distance) + "m";
+                        String distanceToDestination = "distance to " + destination.getName() + " : " + (int) distance + "m";
                         compass.getUserLocationTv().setText(distanceToDestination);
                     }
 

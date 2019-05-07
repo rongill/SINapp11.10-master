@@ -34,7 +34,7 @@ import java.util.Map;
 
 public class FriendProfileActivity extends AppCompatActivity {
 
-    private static final int DYNAMIC_NAV_RESULT_CODE = 300;
+    private static final int LIVE_LOCATION_RESULT_CODE = 300;
     private User friend;
     private TextView friendName;
     private TextView connectionStatus;
@@ -79,8 +79,12 @@ public class FriendProfileActivity extends AppCompatActivity {
                 sendPokeRequest();
                 break;
 
-            case R.id.meetBtn:
-                sendNavigationRequest();
+            case R.id.liveLocation:
+                //TODO make the navigation one sided, send this user credentials and the friend can navigate to him dynamically, this user will be transferred to the main activity and will scan beacons for 15min.
+                if(friend.getStatus().equals("connected")) {
+                    sendNavigationRequest();
+                } else
+                    makeToast("Cannot sent meet request, friend disconnected.");
                 break;
 
             case R.id.sendLocatonBtn:
@@ -143,7 +147,7 @@ public class FriendProfileActivity extends AppCompatActivity {
     //send a RequestMassage to the friend with request type navigation.
     private void sendNavigationRequest(){
         //when a navigation in sent to the friend, close this activity and return to the main, onActivityResult in main activity should handle a return from here with the RequestMessage in the intent and activate a listener to the user navigation log if the friend started navigating.
-        RequestMessage dynamicNavRequest =
+        RequestMessage liveLocationRequestMessage =
                 new RequestMessage(friend.getUserId(),
                         currentUser.getUserId(),
                         currentUser.getUsername(),
@@ -153,8 +157,9 @@ public class FriendProfileActivity extends AppCompatActivity {
         DatabaseReference friendInboxRef = FirebaseDatabase.getInstance().getReference()
                 .child("users-inbox").child(friend.getUserId());
 
+        //TODO change! share live location for some time.
         String pushKey = friendInboxRef.push().getKey();
-        friendInboxRef.child(pushKey).setValue(dynamicNavRequest).addOnCompleteListener(new OnCompleteListener<Void>() {
+        friendInboxRef.child(pushKey).setValue(liveLocationRequestMessage).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if(task.isSuccessful()){
@@ -166,10 +171,10 @@ public class FriendProfileActivity extends AppCompatActivity {
         });
 
         Intent intent = new Intent();
-        intent.putExtra("DYNAMIC_NAVIGATION_REQUEST_MESSAGE", dynamicNavRequest);
-        intent.putExtra("FRIEND_NAME", friend.getUsername());
+        intent.putExtra("DYNAMIC_NAVIGATION_REQUEST_MESSAGE", liveLocationRequestMessage);
+        intent.putExtra("FRIEND_USER", friend);
         intent.putExtra("NAVIGATION_RM_KEY", pushKey);
-        setResult(DYNAMIC_NAV_RESULT_CODE, intent);
+        setResult(LIVE_LOCATION_RESULT_CODE, intent);
         finish();
     }
 

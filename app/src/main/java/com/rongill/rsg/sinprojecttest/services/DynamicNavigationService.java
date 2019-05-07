@@ -31,6 +31,7 @@ public class DynamicNavigationService extends Service {
     private StaticIndoorNavigation staticIndoorNavigation;
     private boolean navigationStarted = false;
     private String navigationLogPushKey;
+    private MyBleScanner myBleScanner;
 
     //TODO need to stop the navigation if this or remote users are disconnected, at both ends.
     @Override
@@ -42,16 +43,12 @@ public class DynamicNavigationService extends Service {
         compass = (Compass)intent.getSerializableExtra("COMPASS");
         navigationLogPushKey = intent.getStringExtra("NAVIGATION_LOG_KEY");
 
-        //if this user is the initiator that sent the request in the first place, the init destination should receive the receiver UID to set the destination.
-        if(intent.getBooleanExtra("INITIATOR", false)) {
-            initDestination(navigationRequestMessage.getReceiverUid());
-        }
-        // if the user start the navigation from the friend request, set the destination by the sender of the request UID
-        else {
-            initDestination(navigationRequestMessage.getSenderUid());
-        }
+
+        initDestination(navigationRequestMessage.getSenderUid());
+
 
         return super.onStartCommand(intent, flags, startId);
+
     }
 
     //set destination with a UID
@@ -69,13 +66,14 @@ public class DynamicNavigationService extends Service {
                 //if remote user is disconnected, stop navigation service and log in server.
                 //if beacon is changed, init the beacon data to this destination.
                 if(dataSnapshot.child("status").toString().equals("disconnected")) {
-                    compass.getUserLocationTv().setText("remote user is disconnected");
+                    compass.getUserLocationTv().setText("remote user has disconnected from server");
                     staticIndoorNavigation.stopNavigation();
                     stopSelf();
-                    Log.i(TAG, "Dynamic navigation stopped-remote user disconnected");
-                } else {
+                    Log.i(TAG, "Dynamic navigation stopped-remote user has disconnected");
+                } else { //TODO bug found, this will accrue every time the data changes at the user table (beacon or connection status)
                     destination.setName(dataSnapshot.child("username").getValue().toString());
                     destination.setCategory("friend");
+                    //TODO need to make sure that the below is readable from DB
                     destination.setBeaconName(dataSnapshot.child("beacon").getValue().toString());
                     readBeaconData(destination.getBeaconName());
                 }
