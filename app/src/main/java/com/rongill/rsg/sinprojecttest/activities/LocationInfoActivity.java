@@ -12,7 +12,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -55,10 +58,27 @@ public class LocationInfoActivity extends AppCompatActivity {
         startNavBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent navIntent = new Intent();
-                navIntent.putExtra("LOCATION", thisLocation);
-                setResult(STATIC_NAV_RESULT_CODE, navIntent);
-                finish();
+                DatabaseReference userStatusRef = FirebaseDatabase.getInstance().getReference()
+                        .child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("status");
+                userStatusRef.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        if(dataSnapshot.getValue().toString().equals("navigating")){
+                            Toast.makeText(getBaseContext(), "Cannot navigate, you are currently navigating.", Toast.LENGTH_LONG).show();
+                        } else {
+                            Intent navIntent = new Intent();
+                            navIntent.putExtra("LOCATION", thisLocation);
+                            setResult(STATIC_NAV_RESULT_CODE, navIntent);
+                            finish();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+
             }
         });
 

@@ -21,7 +21,7 @@
     <string name="sign_up">Sign up</string>
     <string name="confirm_password">Confirm Password</string>
     <string name="nextBtn">Next</string>
-    <string name="sign_inTV">Sign-in</string>
+    <string name="sign_inTV">Sign in</string>
     <string name="your_name_profileET">Your Name</string>
     <string name="profile_telephoneEThint">Telephone</string>
     <string name="preferences_profile_CB_header">Preferences:</string>
@@ -40,4 +40,11 @@
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_management">ManagementActivity</string>
+    <string name="new_account_press_here">New account? press here</string>
+    <string name="sin"> S . I . N </string>
+    <string name="your_location_n_a">Your location - N/A</string>
+    <string name="structure">Structure- N/A</string>
+    <string name="floor">Floor- N/A</string>
+    <string name="beacon_connected_n_a">Beacon connected- N/A</string>
+    <string name="rssi_n_a">Rssi- N/A</string>
 </resources>

@@ -24,6 +24,7 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 import com.rongill.rsg.sinprojecttest.R;
+import com.rongill.rsg.sinprojecttest.basic_objects.MyCalendar;
 import com.rongill.rsg.sinprojecttest.basic_objects.RequestMessage;
 import com.rongill.rsg.sinprojecttest.basic_objects.User;
 
@@ -80,13 +81,20 @@ public class FriendProfileActivity extends AppCompatActivity {
                 break;
 
             case R.id.liveLocation:
-                //TODO make the navigation one sided, send this user credentials and the friend can navigate to him dynamically, this user will be transferred to the main activity and will scan beacons for 15min.
-                if(friend.getStatus().equals("connected")) {
-                    sendNavigationRequest();
-                } else
-                    makeToast("Cannot sent meet request, friend disconnected.");
+                switch (friend.getStatus()) {
+                    case "connected":
+                        sendNavigationRequest();
+                        break;
+                    case "disconnected":
+                        makeToast("Cannot sent meet request, friend disconnected.");
+                        break;
+                    case "navigating":
+                        makeToast("cannot send navigation request, friend is in navigating.");
+                        break;
+                }
                 break;
 
+                //TODO no need, delete!
             case R.id.sendLocatonBtn:
                 sendUserLocation();
                 break;
@@ -146,36 +154,38 @@ public class FriendProfileActivity extends AppCompatActivity {
 
     //send a RequestMassage to the friend with request type navigation.
     private void sendNavigationRequest(){
-        //when a navigation in sent to the friend, close this activity and return to the main, onActivityResult in main activity should handle a return from here with the RequestMessage in the intent and activate a listener to the user navigation log if the friend started navigating.
-        RequestMessage liveLocationRequestMessage =
-                new RequestMessage(friend.getUserId(),
-                        currentUser.getUserId(),
-                        currentUser.getUsername(),
-                        "dynamic-navigation-request",
-                        "pending");
 
-        DatabaseReference friendInboxRef = FirebaseDatabase.getInstance().getReference()
-                .child("users-inbox").child(friend.getUserId());
+            RequestMessage liveLocationRequestMessage =
+                    new RequestMessage(friend.getUserId(),
+                            currentUser.getUserId(),
+                            currentUser.getUsername(),
+                            "dynamic-navigation-request",
+                            "pending");
 
-        //TODO change! share live location for some time.
-        String pushKey = friendInboxRef.push().getKey();
-        friendInboxRef.child(pushKey).setValue(liveLocationRequestMessage).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if(task.isSuccessful()){
-                    makeToast("meet request sent to " + friend.getUsername());
-                } else {
-                    makeToast("something went wrong...");
+            DatabaseReference friendInboxRef = FirebaseDatabase.getInstance().getReference()
+                    .child("users-inbox").child(friend.getUserId());
+
+            String pushKey = friendInboxRef.push().getKey();
+            friendInboxRef.child(pushKey).setValue(liveLocationRequestMessage).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()) {
+                        makeToast("meet request sent to " + friend.getUsername());
+                    } else {
+                        makeToast("something went wrong...");
+                    }
                 }
-            }
-        });
+            });
 
-        Intent intent = new Intent();
-        intent.putExtra("DYNAMIC_NAVIGATION_REQUEST_MESSAGE", liveLocationRequestMessage);
-        intent.putExtra("FRIEND_USER", friend);
-        intent.putExtra("NAVIGATION_RM_KEY", pushKey);
-        setResult(LIVE_LOCATION_RESULT_CODE, intent);
-        finish();
+            friendInboxRef.child(pushKey).child("date-created").setValue(new MyCalendar());
+
+            Intent intent = new Intent();
+            intent.putExtra("DYNAMIC_NAVIGATION_REQUEST_MESSAGE", liveLocationRequestMessage);
+            intent.putExtra("FRIEND_USER", friend);
+            intent.putExtra("NAVIGATION_RM_KEY", pushKey);
+            setResult(LIVE_LOCATION_RESULT_CODE, intent);
+            finish();
+
     }
 
     private void sendUserLocation(){

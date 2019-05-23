@@ -122,7 +122,7 @@ public class InboxService extends Service {
                             Intent dynamicNavRequestConfirmed = new Intent(getBaseContext(), MainDrowerActivity.class);
                             dynamicNavRequestConfirmed.putExtra("CONFIRMED_MESSAGE_KEY",dataSnapshot.getKey());
                             dynamicNavRequestConfirmed.putExtra("DYNAMIC_NAVIGATION_REQUEST_MESSAGE", tempMessage);
-                            dynamicNavRequestConfirmed.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                            dynamicNavRequestConfirmed.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
                             //Navigation denied intent, send to notification receiver and delete the message.
                             Intent dynamicNavRequestDenied = new Intent(getBaseContext(), NotificationReceiver.class);

@@ -48,13 +48,13 @@ public class StaticIndoorNavigation extends IndoorNavigation {
 
     }
 
-    public void stopNavigation(){
+    public void stopNavigation(String s){
         staticNavBleScanner.initLeScan(staticNavScanCallback, false);
         DatabaseReference userNavigationLogStatusRef = FirebaseDatabase.getInstance().getReference()
                 .child("users-navigation-log").child(currentUser.getUserId()).child(pushKey)
                 .child("status");
 
-        userNavigationLogStatusRef.setValue("stopped").addOnCompleteListener(new OnCompleteListener<Void>() {
+        userNavigationLogStatusRef.setValue(s).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 Log.w(TAG, "Static navigation process stopped by user/System.");
@@ -113,6 +113,11 @@ public class StaticIndoorNavigation extends IndoorNavigation {
                         compass.titleTv.setText("click image to scan your location");
                         compass.compassImage.setClickable(true);
                         compass.getUserLocationTv().setText("");
+
+                        //update user status to navigating, will prevent multiple navigation sessions.
+                        DatabaseReference userStatusRef = FirebaseDatabase.getInstance().getReference()
+                                .child("users").child(currentUser.getUserId()).child("status");
+                        userStatusRef.setValue("connected");
                     } else {
                         //calc the direction based on current user location angle to the destination coordinates.
                         //set the float value to the directionAzimuth var in indoor navigation abstract class.

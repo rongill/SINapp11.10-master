@@ -74,7 +74,6 @@ public class MyBleScanner {
         return this.nearestBeacon;
     }
 
-    //TODO algorithem wrong, don't need to hold a list, only need the closest
     //put the closest beacon in the head of the list
     private void setNearestBeacon(MyBeacon scannedBeacon) {
 

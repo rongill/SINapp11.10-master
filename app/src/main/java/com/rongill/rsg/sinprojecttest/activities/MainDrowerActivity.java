@@ -55,6 +55,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.rongill.rsg.sinprojecttest.adapters.FriendListAdapter;
 import com.rongill.rsg.sinprojecttest.basic_objects.MyCalendar;
 import com.rongill.rsg.sinprojecttest.basic_objects.User;
+import com.rongill.rsg.sinprojecttest.navigation.DynamicIndoorNavigation;
 import com.rongill.rsg.sinprojecttest.navigation.Location;
 import com.rongill.rsg.sinprojecttest.R;
 import com.rongill.rsg.sinprojecttest.basic_objects.RequestMessage;
@@ -65,7 +66,6 @@ import com.rongill.rsg.sinprojecttest.navigation.MyBleScanner;
 
 import com.rongill.rsg.sinprojecttest.navigation.Point;
 import com.rongill.rsg.sinprojecttest.navigation.StaticIndoorNavigation;
-import com.rongill.rsg.sinprojecttest.services.DynamicNavigationService;
 import com.rongill.rsg.sinprojecttest.services.InboxService;
 import com.rongill.rsg.sinprojecttest.services.LiveLocationService;
 import com.rongill.rsg.sinprojecttest.services.StructureMessageBoxService;
@@ -74,9 +74,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-//TODO general todo list- 1. change the usecase of dynamic navigation to a send your location UC.
-//TODO 2. when user press meet on a friend that is CONNECTED he will get a list of close by meet-up points to choose from.
-//TODO 3. generate some reports on user connectivity, last changed beacons and locations etc.
+
+//TODO generate some reports on user connectivity, last changed beacons and locations etc.
 
 public class MainDrowerActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -175,6 +174,10 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
             compass = new Compass(compassImage, mSensorManager);
 
             final TextView userLocationTv = (TextView) findViewById(R.id.user_location_TV);
+            final TextView structureMainTv = (TextView)findViewById(R.id.structure_name_main_tv);
+            final TextView floorMainTv = (TextView)findViewById(R.id.floor_main_tv);
+            final TextView beaconNameTv = (TextView)findViewById(R.id.beacon_main_tv);
+            final TextView rssiTv = (TextView)findViewById(R.id.rssi_main_tv);
 
             //set the first scan and then init the location lists, user etc. so we can get the current user connection place.
             final Handler handler = new Handler();
@@ -192,11 +195,13 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
 
                         mUserUtil.getCurrentUser().setCurrentBeacon(myBleScanner.getNearestBeaconFromList());
 
-                        String userLocationString = mUserUtil.getCurrentUser().getCurrentBeacon().getStructure() + " - "
-                                + mUserUtil.getCurrentUser().getCurrentBeacon().getFloor() + " - "
-                                + mUserUtil.getCurrentUser().getCurrentBeacon().getName() + " - "
-                                + mUserUtil.getCurrentUser().getCurrentBeacon().getRssi();
-                        userLocationTv.setText(userLocationString);
+                        userLocationTv.setText(mUserUtil.getCurrentUser().getUsername() + "'s location:");
+                        structureMainTv.setText("Structure- " + mUserUtil.getCurrentUser().getCurrentBeacon().getStructure());
+                        floorMainTv.setText("Floor- " + mUserUtil.getCurrentUser().getCurrentBeacon().getFloor());
+                        beaconNameTv.setText("Beacon connected- " + mUserUtil.getCurrentUser().getCurrentBeacon().getName());
+                        rssiTv.setText("Rssi- " + mUserUtil.getCurrentUser().getCurrentBeacon().getRssi());
+
+
 
 
                         //if this is the first time a beacon is located in the building, will set the management inbox and location list for the building.
@@ -223,10 +228,15 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                                 }
                             });
                         }
+
                         beaconLocated = true;
                     } else {
                         String userLocationString = "couldn't find your location... TAP to rescan";
                         userLocationTv.setText(userLocationString);
+                        structureMainTv.setText("Structure- N/A");
+                        floorMainTv.setText("Floor- N/A");
+                        beaconNameTv.setText("Beacon connected- N/A");
+                        rssiTv.setText("Rssi- N/A");
                     }
                 }
             };
@@ -243,6 +253,10 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                     myBleScanner.getScannedDeviceList().clear();
                     myBleScanner.getNearestBeacon().setRssi(-150);
                     userLocationTv.setText("Scanning...");
+                    structureMainTv.setText("Structure- Scanning...");
+                    floorMainTv.setText("Floor- Scanning...");
+                    beaconNameTv.setText("Beacon connected- Scanning...");
+                    rssiTv.setText("Rssi- Scanning...");
 
                     myBleScanner.initLeScan(true);
                     handler.postDelayed(r, 3000);
@@ -400,10 +414,11 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        // TODO check why on minimize will set the status to disconnected.
         if(mAuth.getCurrentUser() != null ) setConnectionStatus(false);
         if(staticIndoorNavigation != null && !staticIndoorNavigation.hasArrived){
-            staticIndoorNavigation.stopNavigation();
-        }
+            staticIndoorNavigation.stopNavigation("stopped");
+        } // TODO make the same condition on dynamic nav
     }
 
     public void signOut() {
@@ -758,6 +773,11 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                         }
                     });
 
+                    //update user status to navigating, will prevent multiple navigation sessions.
+                    DatabaseReference userStatusRef = FirebaseDatabase.getInstance().getReference()
+                            .child("users").child(mUserUtil.getCurrentUser().getUserId()).child("status");
+                    userStatusRef.setValue("navigating");
+
 
                 }
                 break;
@@ -769,31 +789,27 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                 final String friendInboxPushKey = data.getStringExtra("NAVIGATION_RM_KEY");
                 final User friend = (User)data.getSerializableExtra("FRIEND_USER");
 
-                //TODO start scanning user location for some time and have the friend notified.
 
-                DatabaseReference friendInboxRef = FirebaseDatabase.getInstance().getReference()
+                final DatabaseReference friendInboxRef = FirebaseDatabase.getInstance().getReference()
                         .child("users-inbox").child(friend.getUserId()).child(friendInboxPushKey);
 
                 friendInboxRef.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         if(dataSnapshot.exists()) {
-                            MyCalendar dateStarted = dataSnapshot.child("date-started").getValue(MyCalendar.class);
+                            MyCalendar dateStarted = dataSnapshot.child("dateCreated").getValue(MyCalendar.class);
                             //if message not to old, deleted by friend or older the 15m
                             if (dateStarted.timeDiffInSeconds(new MyCalendar()) < 900) {
-                                if (dataSnapshot.child("status").getValue().toString().equals("confirmed")) {
+                                if (dataSnapshot.child("requestStatus").getValue().toString().contains("confirmed")) {
 
-                                    //If friend confirmed the navigation to user live location, liveLocation service will start and the user navigation log will be created.
-                                    //TODO need to make sure the user will have a nearest beacon before friend start the navigation.
-                                    Intent shareLiveLocationServiceIntent = new Intent(getBaseContext(), LiveLocationService.class);
-                                    shareLiveLocationServiceIntent.putExtra("CURRENT_USER", mUserUtil.getCurrentUser());
-                                    getBaseContext().startService(shareLiveLocationServiceIntent);
+                                    //TODO check if this works, the confirmed string contains also the friend nav log key for this user to listen to any changes.
+                                    String friendNavLogPushKey = dataSnapshot.child("requestStatus").getValue().toString().substring(10);
 
                                     Map<String, String> newPost = new HashMap<>();
                                     newPost.put("destination-uid", message.getReceiverUid());
                                     newPost.put("destination-username", ((User) (data.getSerializableExtra("FRIEND_USER"))).getUsername());
                                     newPost.put("destination-beacon", "my-live-location");
-                                    newPost.put("status", "started");
+                                    newPost.put("status", "sharing");
                                     newPost.put("navigation-type", "share-live-location");
 
                                     final DatabaseReference userNavigationLogRef = FirebaseDatabase.getInstance().getReference()
@@ -803,6 +819,22 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                                     final String pushKey = userNavigationLogRef.push().getKey();
                                     userNavigationLogRef.child(pushKey).setValue(newPost);
                                     userNavigationLogRef.child(pushKey).child("date-started").setValue(new MyCalendar());
+
+
+                                    //If friend confirmed the navigation to user live location, liveLocation service will start and the user navigation log will be created.
+                                    Intent shareLiveLocationServiceIntent = new Intent(getBaseContext(), LiveLocationService.class);
+                                    shareLiveLocationServiceIntent.putExtra("CURRENT_USER", mUserUtil.getCurrentUser());
+                                    shareLiveLocationServiceIntent.putExtra("NAVIGATION_PUSHKEY", pushKey);
+                                    shareLiveLocationServiceIntent.putExtra("FRIEND_NAV_LOG_PUSHKEY", friendNavLogPushKey);
+                                    shareLiveLocationServiceIntent.putExtra("DYNAMIC_NAVIGATION_REQUEST_MESSAGE", message);
+                                    getBaseContext().startService(shareLiveLocationServiceIntent);
+
+                                    //update user status to navigating, will prevent multiple navigation sessions.
+                                    DatabaseReference userStatusRef = FirebaseDatabase.getInstance().getReference()
+                                            .child("users").child(mUserUtil.getCurrentUser().getUserId()).child("status");
+                                    userStatusRef.setValue("navigating");
+
+                                    //TODO make a stop nav btn visible and actionable.
                                 }
                             }
                         }
@@ -823,13 +855,16 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
     //this override is for the user confirmed Dynamic navigation from InboxService notification.
     @Override
     protected void onNewIntent(Intent intent) {
+        this.setIntent(intent);
         if(intent.getSerializableExtra("DYNAMIC_NAVIGATION_REQUEST_MESSAGE") != null){
             Log.d(TAG, "Dynamic navigation started at receiver side.");
             //start the dynamic nav here with a service. create a navigation log entry to the current user
             //get the message from the inbox service, init the user nav log with the friend UID as destination.
             NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             manager.cancel(2);
+
             RequestMessage dynamicNavRequestMessage = (RequestMessage)intent.getSerializableExtra("DYNAMIC_NAVIGATION_REQUEST_MESSAGE");
+
             Map<String,String> newPost = new HashMap<>();
 
             newPost.put("destination-uid", dynamicNavRequestMessage.getSenderUid());
@@ -849,7 +884,12 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
             DatabaseReference userInboxRef = FirebaseDatabase.getInstance().getReference()
                     .child("users-inbox").child(dynamicNavRequestMessage.getReceiverUid())
                     .child(intent.getStringExtra("CONFIRMED_MESSAGE_KEY"));
-            userInboxRef.child("status").setValue("confirmed");
+            userInboxRef.child("requestStatus").setValue("confirmed-" + pushKey);
+
+            //update user status to navigating, will prevent multiple navigation sessions.
+            DatabaseReference userStatusRef = FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(mUserUtil.getCurrentUser().getUserId()).child("status");
+            userStatusRef.setValue("navigating");
 
             //wait for friend to start scanning and updating beacon name in DB
             try {
@@ -858,12 +898,9 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                 e.printStackTrace();
             }
 
-            Intent dynamicNavIntent = new Intent(this, DynamicNavigationService.class);
-            intent.putExtra("CURRENT_USER", mUserUtil.getCurrentUser());
-            intent.putExtra("NAVIGATION_LOG_KEY", pushKey);
-            intent.putExtra("COMPASS", compass);
-            intent.putExtra("DYNAMIC_NAVIGATION_REQUEST_MESSAGE", dynamicNavRequestMessage);
-            this.startService(dynamicNavIntent);
+            DynamicIndoorNavigation dynamicIndoorNavigation = new DynamicIndoorNavigation(this, mUserUtil.getCurrentUser(),dynamicNavRequestMessage, compass, pushKey);
+
+            //TODO make a stop nav btn visible and actionable.
 
         }
         super.onNewIntent(intent);

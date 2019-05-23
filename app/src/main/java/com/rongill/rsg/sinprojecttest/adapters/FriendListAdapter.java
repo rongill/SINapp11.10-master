@@ -104,6 +104,8 @@ public class FriendListAdapter extends ArrayAdapter<String> {
                     case "disconnected":
                         viewHolder.connectionStatus.setImageResource(R.drawable.friend_disconnected_icon);
                         break;
+                    case "navigating":
+                        viewHolder.connectionStatus.setImageResource((R.drawable.navigation_status_icon));
                 }
 
             }

@@ -35,6 +35,7 @@ public class StructureMessageBoxService extends Service {
         structureMessageRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                //TODO debug, check why the "if" statement always true for last added message.
                 MyCalendar postedDate = dataSnapshot.getValue(MyCalendar.class);
                 int timeDiff = postedDate.timeDiffInSeconds(new MyCalendar());
                 if(timeDiff<1000){

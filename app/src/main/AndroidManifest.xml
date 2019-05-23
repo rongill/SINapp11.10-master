@@ -23,11 +23,6 @@
         android:supportsRtl="false"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <service
-            android:name=".services.LiveLocationService"
-            android:enabled="true"
-            android:exported="true"></service>
-
         <activity
             android:name=".activities.ManagementActivity"
             android:label="@string/title_activity_management"
@@ -37,7 +32,8 @@
         <activity android:name=".activities.CreateUserProfileActivity" />
         <activity
             android:name=".activities.FriendProfileActivity"
-            android:parentActivityName=".activities.MainDrowerActivity" />
+            android:parentActivityName=".activities.MainDrowerActivity"
+            android:launchMode="singleTask"/>
         <activity
             android:name=".activities.MainDrowerActivity"
             android:theme="@style/AppTheme">
@@ -62,11 +58,10 @@
             android:theme="@style/AppTheme.WindowOverActivityPopupTheme" />
 
         <service android:name=".services.DynamicNavigationService" />
-
         <receiver android:name=".services.NotificationReceiver" />
-
         <service android:name=".services.InboxService" />
         <service android:name=".services.StructureMessageBoxService" />
+        <service android:name=".services.LiveLocationService"/>
     </application>
 
 </manifest>

@@ -270,6 +270,5 @@ public class ManagementActivity extends AppCompatActivity {
 
     }
 
-    //TODO make fab click to open message box DEBUG
 
 }

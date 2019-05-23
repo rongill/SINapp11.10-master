@@ -24,6 +24,8 @@ public class RequestMessage implements Serializable {
         this.dateCreated = new MyCalendar();
     }
 
+    public RequestMessage(){}
+
     public MyCalendar getDateCreated() {
         return dateCreated;
     }
@@ -32,7 +34,7 @@ public class RequestMessage implements Serializable {
         this.dateCreated = dateCreated;
     }
 
-    public RequestMessage(){}
+
 
     public String getReceiverUid() {
         return receiverUid;

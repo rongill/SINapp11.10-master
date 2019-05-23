@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.QuickContactBadge;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -34,10 +35,21 @@ public class LoginActivity extends AppCompatActivity {
         //Edit text init-
         emailET = (EditText)findViewById(R.id.emailLogin);
         passwordET = (EditText)findViewById(R.id.passwordLogin);
+
+        //button to active users, if empty will send to signup page.
         findViewById(R.id.btnLogin).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 loginOrSignup(emailET.getText().toString(), passwordET.getText().toString());
+            }
+        });
+
+        //button for signup page.
+        findViewById(R.id.new_account_btn).setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getBaseContext(),SignupActivity.class));
+                finish();
             }
         });
         Button resetPasswordBtn = (Button)findViewById(R.id.forgotPass_btn);
@@ -98,6 +110,8 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
+    //creates an alert dialog with an Email input.
+    //if Email is in the system, will send a reset password email, otherwise will show a message.
     public void forgotPasswordRequest(){
 
         final AlertDialog.Builder passwordResetDialog = new AlertDialog.Builder(this);
@@ -105,6 +119,7 @@ public class LoginActivity extends AppCompatActivity {
         final EditText input = new EditText(this);
         passwordResetDialog.setView(input);
         input.setText("");
+
 
         passwordResetDialog.setPositiveButton("Send", new DialogInterface.OnClickListener() {
             @Override
