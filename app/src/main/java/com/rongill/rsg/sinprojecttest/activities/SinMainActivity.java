@@ -77,7 +77,7 @@ import java.util.Map;
 
 //TODO generate some reports on user connectivity, last changed beacons and locations etc.
 
-public class MainDrowerActivity extends AppCompatActivity implements SensorEventListener {
+public class SinMainActivity extends AppCompatActivity implements SensorEventListener {
 
     private final String TAG = "MainActivity";
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
@@ -128,7 +128,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 if (firebaseAuth.getCurrentUser() == null) {
                     Log.i(TAG, "user login state changed, moved to LoginActivity");
-                    startActivity(new Intent(MainDrowerActivity.this, LoginActivity.class));
+                    startActivity(new Intent(SinMainActivity.this, LoginActivity.class));
                     finish();
                 }
             }
@@ -153,17 +153,18 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
 
         if (mAuth.getCurrentUser() == null) {
             Log.i(TAG, "user not signed in, move to LoginActivity");
-            startActivity(new Intent(MainDrowerActivity.this, LoginActivity.class));
+            startActivity(new Intent(SinMainActivity.this, LoginActivity.class));
             finish();
         } else {
 
+            //build current user singleton class.
             mUserUtil = new UserUtil();
             mUserUtil.saveUserLoginDate(new MyCalendar());
-            setBluetooth();
-
-
-
             setConnectionStatus(true);
+
+            //init the MyBleScanner obj with the system service params, checking Ble version
+            //support and permissions, and start the first scan.
+            setBluetooth();
 
             setSearchListView();
 
@@ -173,6 +174,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
             mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
             compass = new Compass(compassImage, mSensorManager);
 
+            final TextView mainPageTitleTv = (TextView)findViewById(R.id.action_display_view);
             final TextView userLocationTv = (TextView) findViewById(R.id.user_location_TV);
             final TextView structureMainTv = (TextView)findViewById(R.id.structure_name_main_tv);
             final TextView floorMainTv = (TextView)findViewById(R.id.floor_main_tv);
@@ -184,23 +186,23 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
             final Runnable r = new Runnable() {
                 @Override
                 public void run() {
+                    compass.compassImage.setClickable(true);
                     myBleScanner.initLeScan(false);
                     if(userIsSet) {
                         setUserInbox();
                         setFriendAdapter();
                     }
-                    //TODO debug what is the best way to retrieve the closest beacon, here we scan the list of beacon created and return the max rssi beacon
                     //if the scanner was able to scan SIN project beacons, set the TextView.
                     if (myBleScanner.getNearestBeacon().getRssi() > -150) {
 
                         mUserUtil.getCurrentUser().setCurrentBeacon(myBleScanner.getNearestBeaconFromList());
 
-                        userLocationTv.setText(mUserUtil.getCurrentUser().getUsername() + "'s location:");
+                        userLocationTv.setText("Hello " + mUserUtil.getCurrentUser().getUsername() + "!\n your location:");
                         structureMainTv.setText("Structure- " + mUserUtil.getCurrentUser().getCurrentBeacon().getStructure());
                         floorMainTv.setText("Floor- " + mUserUtil.getCurrentUser().getCurrentBeacon().getFloor());
                         beaconNameTv.setText("Beacon connected- " + mUserUtil.getCurrentUser().getCurrentBeacon().getName());
                         rssiTv.setText("Rssi- " + mUserUtil.getCurrentUser().getCurrentBeacon().getRssi());
-
+                        mainPageTitleTv.setText("scan OK!\n you are connected to- " + mUserUtil.getCurrentUser().getCurrentBeacon().getStructure()+"\ntap S.I.N compass to rescan");
 
 
 
@@ -237,6 +239,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                         floorMainTv.setText("Floor- N/A");
                         beaconNameTv.setText("Beacon connected- N/A");
                         rssiTv.setText("Rssi- N/A");
+                        mainPageTitleTv.setText("scan failed\nplease tap compass to rescan");
                     }
                 }
             };
@@ -690,6 +693,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
                     startActivityForResult(enableBTintent, PERMISSION_REQUEST_COARSE_BL);
                 }
             }
+
             //init the BLE scanner
             myBleScanner = new MyBleScanner((BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE));
 
@@ -746,10 +750,11 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
 
                     final Location destination = (Location) extras.getSerializable("LOCATION");
 
+                    //TODO add all TV's to the compass
                     compass.titleTv = (TextView) findViewById(R.id.action_display_view);
                     compass.setUserLocationTv((TextView) findViewById(R.id.user_location_TV));
 
-                    String displayString = "Navigation to " + destination.getName() + "started";
+                    String displayString = "Navigation to " + destination.getName() + " started";
                     compass.titleTv.setText(displayString);
                     compass.compassImage.setClickable(false);
 
@@ -775,7 +780,7 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
 
                     //update user status to navigating, will prevent multiple navigation sessions.
                     DatabaseReference userStatusRef = FirebaseDatabase.getInstance().getReference()
-                            .child("users").child(mUserUtil.getCurrentUser().getUserId()).child("status");
+                            .child("users").child(mUserUtil.getCurrentUser().getUserId()).child("navigation-status");
                     userStatusRef.setValue("navigating");
 
 
@@ -845,6 +850,11 @@ public class MainDrowerActivity extends AppCompatActivity implements SensorEvent
 
                     }
                 });
+
+                //update user status to navigating, will prevent multiple navigation sessions.
+                DatabaseReference userStatusRef = FirebaseDatabase.getInstance().getReference()
+                        .child("users").child(mUserUtil.getCurrentUser().getUserId()).child("navigation-status");
+                userStatusRef.setValue("navigating");
 
                 break;
         }

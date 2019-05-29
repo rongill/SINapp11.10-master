@@ -44,12 +44,11 @@ public class SignupActivity extends AppCompatActivity {
 
     public void signUp(View v){
         String []password = new String[2];
-
         if(passwordET != null && confirmPassword != null) {
             password[0] = passwordET.getText().toString();
             password[1] = confirmPassword.getText().toString();
         }
-        // check that both fields are filled
+        // check that all fields are filled correctly,
         if(validateEmailAndPassword(emailET.getText().toString(), userNameET.getText().toString(), password)){
             mFirebaseAuth.createUserWithEmailAndPassword(emailET.getText().toString(), password[0])
                     .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -72,8 +71,10 @@ public class SignupActivity extends AppCompatActivity {
     }
 
     public void updateUI(Boolean state){
+        //create the new user in DB, and start the main activity.
         if(state && mFirebaseAuth != null){
-            DatabaseReference mRef = FirebaseDatabase.getInstance().getReference().child("users").child(mFirebaseAuth.getUid());
+            DatabaseReference mRef = FirebaseDatabase.getInstance().getReference().child("users")
+                    .child(mFirebaseAuth.getUid());
             Map<String,String> newPost = new HashMap<>();
             newPost.put("username", userNameET.getText().toString());
             newPost.put("email",emailET.getText().toString());

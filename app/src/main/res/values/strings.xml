@@ -47,4 +47,5 @@
     <string name="floor">Floor- N/A</string>
     <string name="beacon_connected_n_a">Beacon connected- N/A</string>
     <string name="rssi_n_a">Rssi- N/A</string>
+    <string name="location">Location</string>
 </resources>

@@ -16,8 +16,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.rongill.rsg.sinprojecttest.R;
-import com.rongill.rsg.sinprojecttest.activities.MainDrowerActivity;
-import com.rongill.rsg.sinprojecttest.basic_objects.MyCalendar;
+import com.rongill.rsg.sinprojecttest.activities.SinMainActivity;
 import com.rongill.rsg.sinprojecttest.basic_objects.User;
 
 
@@ -73,7 +72,7 @@ public class StaticIndoorNavigation extends IndoorNavigation {
 
     //Notification message when user arrives at destination.
     private void arrivalNotificationMessage(){
-        Intent intent = new Intent(context, MainDrowerActivity.class);
+        Intent intent = new Intent(context, SinMainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -116,8 +115,8 @@ public class StaticIndoorNavigation extends IndoorNavigation {
 
                         //update user status to navigating, will prevent multiple navigation sessions.
                         DatabaseReference userStatusRef = FirebaseDatabase.getInstance().getReference()
-                                .child("users").child(currentUser.getUserId()).child("status");
-                        userStatusRef.setValue("connected");
+                                .child("users").child(currentUser.getUserId()).child("navigation-status");
+                        userStatusRef.setValue("idle");
                     } else {
                         //calc the direction based on current user location angle to the destination coordinates.
                         //set the float value to the directionAzimuth var in indoor navigation abstract class.

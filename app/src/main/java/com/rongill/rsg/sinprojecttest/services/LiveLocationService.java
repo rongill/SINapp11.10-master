@@ -21,7 +21,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.rongill.rsg.sinprojecttest.R;
-import com.rongill.rsg.sinprojecttest.activities.MainDrowerActivity;
+import com.rongill.rsg.sinprojecttest.activities.SinMainActivity;
 import com.rongill.rsg.sinprojecttest.basic_objects.RequestMessage;
 import com.rongill.rsg.sinprojecttest.basic_objects.User;
 import com.rongill.rsg.sinprojecttest.navigation.MyBeacon;
@@ -134,7 +134,7 @@ public class LiveLocationService extends Service {
 
 
     private void makeNotification(String message){
-        Intent intent = new Intent(getBaseContext(), MainDrowerActivity.class);
+        Intent intent = new Intent(getBaseContext(), SinMainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 
         PendingIntent contentIntent = PendingIntent.getActivity(getBaseContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -149,6 +149,11 @@ public class LiveLocationService extends Service {
 
         NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(getBaseContext());
         notificationManagerCompat.notify(3, notificationBuilder.build());
+
+        //update user status to navigating, will prevent multiple navigation sessions.
+        DatabaseReference userStatusRef = FirebaseDatabase.getInstance().getReference()
+                .child("users").child(currentUser.getUserId()).child("navigation-status");
+        userStatusRef.setValue("idle");
     }
 
     private ScanCallback scanCallback = new ScanCallback() {

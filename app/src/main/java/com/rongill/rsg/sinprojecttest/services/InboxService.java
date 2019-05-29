@@ -15,7 +15,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.rongill.rsg.sinprojecttest.R;
 import com.rongill.rsg.sinprojecttest.activities.FriendProfileActivity;
-import com.rongill.rsg.sinprojecttest.activities.MainDrowerActivity;
+import com.rongill.rsg.sinprojecttest.activities.SinMainActivity;
 import com.rongill.rsg.sinprojecttest.basic_objects.MyCalendar;
 import com.rongill.rsg.sinprojecttest.basic_objects.RequestMessage;
 import com.rongill.rsg.sinprojecttest.basic_objects.User;
@@ -119,7 +119,7 @@ public class InboxService extends Service {
                         if(checkMessageAge(DYNAMIC_NAV_MAX_TIME_IN_SECONDS, tempMessage, dataSnapshot.getKey())) {
 
                             //Navigation confirmed intent, move to main activity and start navigating.
-                            Intent dynamicNavRequestConfirmed = new Intent(getBaseContext(), MainDrowerActivity.class);
+                            Intent dynamicNavRequestConfirmed = new Intent(getBaseContext(), SinMainActivity.class);
                             dynamicNavRequestConfirmed.putExtra("CONFIRMED_MESSAGE_KEY",dataSnapshot.getKey());
                             dynamicNavRequestConfirmed.putExtra("DYNAMIC_NAVIGATION_REQUEST_MESSAGE", tempMessage);
                             dynamicNavRequestConfirmed.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);

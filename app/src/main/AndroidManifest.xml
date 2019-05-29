@@ -32,10 +32,10 @@
         <activity android:name=".activities.CreateUserProfileActivity" />
         <activity
             android:name=".activities.FriendProfileActivity"
-            android:parentActivityName=".activities.MainDrowerActivity"
+            android:parentActivityName=".activities.SinMainActivity"
             android:launchMode="singleTask"/>
         <activity
-            android:name=".activities.MainDrowerActivity"
+            android:name=".activities.SinMainActivity"
             android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -43,7 +43,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.LocationInfoActivity" />
+        <activity android:name=".activities.LocationInfoActivity"
+            android:theme="@style/AppTheme.SmallWindowPopup"/>
         <activity android:name=".activities.StructureInfoActivity" />
         <activity android:name=".activities.LocationSettingActivity" />
         <activity

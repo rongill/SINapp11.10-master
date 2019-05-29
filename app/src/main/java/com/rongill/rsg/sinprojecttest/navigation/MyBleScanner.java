@@ -95,6 +95,7 @@ public class MyBleScanner {
                 scannedBeacon.setName(result.getDevice().getName());
                 scannedBeacon.setRssi(result.getRssi());
 
+                //send the scanned beacon, fetch data from server.
                 setBeaconDataFromServer(scannedBeacon);
 
 
@@ -118,7 +119,6 @@ public class MyBleScanner {
                     p.setY(Integer.parseInt(ds.child("y").getValue().toString()));
                     scannedBeacon.setCoordinates(p);
                 }
-
                 //if scanned device already in the list, update it.
                 for (int i = 0; i < getScannedDeviceList().size(); i++) {
                     if (getScannedDeviceList().get(i).getMACaddress().contains(scannedBeacon.getMACaddress())) {
@@ -126,7 +126,6 @@ public class MyBleScanner {
                         getScannedDeviceList().get(i).setRssi(scannedBeacon.getRssi());
                     }
                 }
-
                 //add to the list all the devices scanned that has "SIN" string in the name.
                 if (!contains) {
                     getScannedDeviceList().add(scannedBeacon);
@@ -135,13 +134,9 @@ public class MyBleScanner {
                 if(!scannedBeacon.getName().equals(nearestBeacon.getName())){
                     setNearestBeacon(scannedBeacon);
                 }
-
             }
-
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
+            public void onCancelled(@NonNull DatabaseError databaseError) {}
         });
     }
 

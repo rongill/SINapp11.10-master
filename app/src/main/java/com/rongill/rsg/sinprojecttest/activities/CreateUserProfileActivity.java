@@ -99,7 +99,7 @@ public class CreateUserProfileActivity extends AppCompatActivity {
     private void updateUI(Boolean state){
         if(state){
             Toast.makeText(this, "Profile saved successfully", Toast.LENGTH_LONG).show();
-            startActivity(new Intent(this, MainDrowerActivity.class));
+            startActivity(new Intent(this, SinMainActivity.class));
             finish();
         } else {
             Toast.makeText(this, "something whent wrong..", Toast.LENGTH_LONG).show();

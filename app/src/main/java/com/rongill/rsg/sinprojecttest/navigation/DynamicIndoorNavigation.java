@@ -17,7 +17,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.rongill.rsg.sinprojecttest.R;
-import com.rongill.rsg.sinprojecttest.activities.MainDrowerActivity;
+import com.rongill.rsg.sinprojecttest.activities.SinMainActivity;
 import com.rongill.rsg.sinprojecttest.basic_objects.RequestMessage;
 import com.rongill.rsg.sinprojecttest.basic_objects.User;
 
@@ -61,7 +61,7 @@ public class DynamicIndoorNavigation {
                     compass.getUserLocationTv().setText("remote user has disconnected from server");
                     staticIndoorNavigation.stopNavigation("friend DC, mid session");
                     Log.i(TAG, "Dynamic navigation stopped-remote user has disconnected");
-                } else { //TODO maybe change the listiner to the nav log, for that will need to update the beacon in the nav log.
+                } else { //TODO maybe change the listener to the nav log, for that will need to update the beacon in the nav log.
                     destination.setName(dataSnapshot.child("username").getValue().toString());
                     destination.setCategory("friend");
                     destination.setBeaconName(dataSnapshot.child("beacon").getValue().toString());
@@ -187,7 +187,7 @@ public class DynamicIndoorNavigation {
     }
 
     private void makeNotification(String message){
-        Intent intent = new Intent(context, MainDrowerActivity.class);
+        Intent intent = new Intent(context, SinMainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);

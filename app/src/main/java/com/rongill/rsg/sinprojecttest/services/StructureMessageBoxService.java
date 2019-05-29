@@ -15,8 +15,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.rongill.rsg.sinprojecttest.R;
-import com.rongill.rsg.sinprojecttest.activities.FriendProfileActivity;
-import com.rongill.rsg.sinprojecttest.activities.MainDrowerActivity;
+import com.rongill.rsg.sinprojecttest.activities.SinMainActivity;
 import com.rongill.rsg.sinprojecttest.basic_objects.MyCalendar;
 
 public class StructureMessageBoxService extends Service {
@@ -35,13 +34,11 @@ public class StructureMessageBoxService extends Service {
         structureMessageRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                //TODO debug, check why the "if" statement always true for last added message.
-                MyCalendar postedDate = dataSnapshot.getValue(MyCalendar.class);
+                MyCalendar postedDate = dataSnapshot.child("date-posted").getValue(MyCalendar.class);
                 int timeDiff = postedDate.timeDiffInSeconds(new MyCalendar());
                 if(timeDiff<1000){
-                    //TODO send the notification to the broadcast receiver.
 
-                    Intent intent = new Intent(getBaseContext(), MainDrowerActivity.class);
+                    Intent intent = new Intent(getBaseContext(), SinMainActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
                     PendingIntent pi = PendingIntent.getActivity(getBaseContext(), 0, intent,

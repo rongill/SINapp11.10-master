@@ -10,7 +10,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.QuickContactBadge;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -99,7 +98,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void updateUI(boolean state){
         if (state){
-            startActivity(new Intent(this, MainDrowerActivity.class));
+            startActivity(new Intent(this, SinMainActivity.class));
             finish();
 
         }else{

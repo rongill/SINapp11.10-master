@@ -1,21 +1,18 @@
 package com.rongill.rsg.sinprojecttest.app_utilities;
 
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.rongill.rsg.sinprojecttest.activities.MainDrowerActivity;
+import com.rongill.rsg.sinprojecttest.activities.SinMainActivity;
 import com.rongill.rsg.sinprojecttest.basic_objects.MyCalendar;
 import com.rongill.rsg.sinprojecttest.basic_objects.User;
-import com.rongill.rsg.sinprojecttest.navigation.MyBeacon;
 
 import java.io.Serializable;
 
@@ -25,20 +22,17 @@ public class UserUtil implements Serializable {
     private FirebaseUser mFirebaseUser;
     private User currentUser;
 
-
     public  UserUtil(){
         FirebaseAuth mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
         currentUser = new User();
         Log.i(TAG, "user init started.");
+
+        //fetch user data from Firebase servers.
         setCurrentUser();
     }
-
-    public User getCurrentUser(){
-        return this.currentUser;
-    }
-
     private void setCurrentUser(){
+        //reference to the user table, where we read the data.
         DatabaseReference userRef = FirebaseDatabase.getInstance().getReference()
                 .child("users").child(mFirebaseUser.getUid());
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -49,6 +43,7 @@ public class UserUtil implements Serializable {
                 currentUser.setUserType(dataSnapshot.getValue(User.class).getUserType());
                 currentUser.setStatus(dataSnapshot.getValue(User.class).getStatus());
 
+                //fetch user friend list from Firebase servers.
                 Log.i(TAG, "user friends list creator started.");
                 updateFriendList();
             }
@@ -59,6 +54,11 @@ public class UserUtil implements Serializable {
             }
         });
     }
+
+    public User getCurrentUser(){
+        return this.currentUser;
+    }
+
 
     //set the current users friends UID list
     private void updateFriendList(){
@@ -72,7 +72,7 @@ public class UserUtil implements Serializable {
                 for(DataSnapshot ds : dataSnapshot.getChildren()){
                     currentUser.addFriend(ds.getValue().toString());
                 }
-                MainDrowerActivity.userIsSet = true;
+                SinMainActivity.userIsSet = true;
             }
 
             @Override
