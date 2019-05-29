@@ -1,6 +1,17 @@
 package com.rongill.rsg.sinprojecttest.basic_objects;
 
+import android.support.annotation.NonNull;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.rongill.rsg.sinprojecttest.navigation.MyBeacon;
+import com.rongill.rsg.sinprojecttest.navigation.Point;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -9,7 +20,7 @@ import java.util.Objects;
 public class User implements Serializable {
 
     private String userId, status, username, userType;
-    private ArrayList<User> friends = new ArrayList<>();
+    private ArrayList<String> friendsUid = new ArrayList<>();
     private MyBeacon currentBeacon;
 
     public User(){}
@@ -29,28 +40,16 @@ public class User implements Serializable {
 
     public void setCurrentBeacon(MyBeacon currentBeacon) {
         this.currentBeacon = currentBeacon;
-        //TODO get beacon (X,Y) from DB.
+        updateUserBeaconNameInDB(currentBeacon.getName());
+        this.currentBeacon.getBeaconDetailsDB();
     }
 
-    public void setFriends(ArrayList<User> friendList){
-        this.friends = friendList;
+    public ArrayList<String> getFriends(){
+        return this.friendsUid;
     }
 
-    public ArrayList<User> getFriends(){
-        return this.friends;
-    }
-
-    public void addFriend(User friend){
-        this.friends.add(friend);
-    }
-
-    public void setFriendStatusByUid(String friendUid, String newStatus){
-        for(int i=0; i<friends.size();i++){
-            if(friends.get(i).getUserId().equals(friendUid))
-                this.friends.get(i).setStatus(newStatus);
-
-        }
-
+    public void addFriend(String friendUid){
+        this.friendsUid.add(friendUid);
     }
 
     public String getUserId() {
@@ -100,5 +99,13 @@ public class User implements Serializable {
     public int hashCode() {
 
         return Objects.hash(getUserId(), getStatus(), username, getUserType());
+    }
+
+    private void updateUserBeaconNameInDB(String beaconName){
+        if(FirebaseAuth.getInstance().getUid() != null) {
+            DatabaseReference userBeaconRef = FirebaseDatabase.getInstance().getReference()
+                    .child("users").child(FirebaseAuth.getInstance().getUid()).child("beacon");
+            userBeaconRef.setValue(beaconName);
+        }
     }
 }

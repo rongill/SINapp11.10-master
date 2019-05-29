@@ -20,6 +20,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.rongill.rsg.sinprojecttest.R;
 import com.rongill.rsg.sinprojecttest.adapters.BeaconListAdapter;
+import com.rongill.rsg.sinprojecttest.basic_objects.MyCalendar;
 import com.rongill.rsg.sinprojecttest.navigation.MyBeacon;
 import com.rongill.rsg.sinprojecttest.navigation.Point;
 
@@ -87,8 +88,11 @@ public class BeaconSettingActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.add_beacon:
+                String structureName = getIntent().getStringExtra("STRUCTURE");
                 Intent intent = new Intent(this, AddModifyBeaconActivity.class);
+                intent.putExtra("STRUCTURE", structureName);
                 startActivity(intent);
+
         }
 
         return super.onOptionsItemSelected(item);
@@ -110,6 +114,8 @@ public class BeaconSettingActivity extends AppCompatActivity {
                 MyBeacon tempBeacon = new MyBeacon();
                 tempBeacon.setName(dataSnapshot.getValue(MyBeacon.class).getName());
                 tempBeacon.setFloor(dataSnapshot.getValue(MyBeacon.class).getFloor());
+                tempBeacon.setStructure(dataSnapshot.getValue(MyBeacon.class).getStructure());
+                tempBeacon.setDateModified(dataSnapshot.child("date-modified").getValue(MyCalendar.class));
 
                 Point p = new Point();
                 p.setX(Integer.parseInt(dataSnapshot.child("x").getValue().toString()));
@@ -128,6 +134,9 @@ public class BeaconSettingActivity extends AppCompatActivity {
                 MyBeacon tempBeacon = new MyBeacon();
                 tempBeacon.setName(dataSnapshot.getValue(MyBeacon.class).getName());
                 tempBeacon.setFloor(dataSnapshot.getValue(MyBeacon.class).getFloor());
+                tempBeacon.setStructure(dataSnapshot.getValue(MyBeacon.class).getStructure());
+                tempBeacon.setDateModified(dataSnapshot.child("date-modified").getValue(MyCalendar.class));
+
 
                 Point p = new Point();
                 p.setX(Integer.parseInt(dataSnapshot.child("x").getValue().toString()));

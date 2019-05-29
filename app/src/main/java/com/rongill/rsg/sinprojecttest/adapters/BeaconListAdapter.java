@@ -33,7 +33,7 @@ public class BeaconListAdapter extends ArrayAdapter<MyBeacon> {
     private Context context;
 
     private static class ViewHolder{
-        TextView beaconNameTv, beaconFloorTv, beaconCoordinatesTv;
+        TextView beaconNameTv, beaconFloorTv, beaconCoordinatesTv, beaconDateModifiedTv;
         Button modifyBtn, removeBtn;
     }
 
@@ -72,6 +72,7 @@ public class BeaconListAdapter extends ArrayAdapter<MyBeacon> {
             viewHolder.beaconNameTv = (TextView)convertView.findViewById(R.id.beacon_name_item_listView);
             viewHolder.beaconFloorTv = (TextView)convertView.findViewById(R.id.beacon_floor_indicator_item_listView);
             viewHolder.beaconCoordinatesTv = (TextView)convertView.findViewById(R.id.beacon_coordinates_item_listView);
+            viewHolder.beaconDateModifiedTv = (TextView)convertView.findViewById(R.id.beacon_date_modified_item_listView);
             viewHolder.modifyBtn = (Button) convertView.findViewById(R.id.modify_beacon_button);
             viewHolder.removeBtn = (Button) convertView.findViewById(R.id.remove_beacon_button);
 
@@ -85,6 +86,10 @@ public class BeaconListAdapter extends ArrayAdapter<MyBeacon> {
             viewHolder.beaconFloorTv.setText(beacon.getFloor());
             viewHolder.beaconCoordinatesTv.setText(beacon.getCoordinates().toString());
 
+            String dateModifiedString = beacon.getDateModified().getDate() + " - " + beacon.getDateModified().getTime();
+            viewHolder.beaconDateModifiedTv.setText(dateModifiedString);
+
+            //on modified pressed send the beacon to modify to AddModifyBeaconActivity
             viewHolder.modifyBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

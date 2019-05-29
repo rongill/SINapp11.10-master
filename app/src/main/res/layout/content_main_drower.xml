@@ -5,27 +5,89 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".activities.MainDrowerActivity"
+    tools:context=".activities.SinMainActivity"
     tools:showIn="@layout/app_bar_main_drower">
+
+
+    <TextView
+        android:id="@+id/action_display_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:text="Welcome to the S.I.N project\ninitiating first scan please wait..."
+        android:layout_marginBottom="10dp"
+        android:textSize="15sp"
+        android:textAllCaps="true"
+        android:gravity="center"
+        android:layout_marginTop="120dp"
+        />
 
     <ImageView
         android:id="@+id/compass_image"
         android:layout_width="168dp"
         android:layout_height="192dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="20dp"
+        android:layout_below="@+id/action_display_view"
         android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        app:srcCompat="@drawable/sinicon"
+        android:layout_gravity="center"
+        android:layout_marginTop="15dp"
+        android:clickable="false"
+        android:focusable="true"
         android:rotation="90"
-        />
-    <TextView
-        android:id="@+id/user_location_TV"
-        android:layout_width="wrap_content"
+        android:layout_marginBottom="15dp"
+        app:srcCompat="@drawable/sinicon" />
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/compass_image"
         android:layout_centerHorizontal="true"
-        android:text="User Location"/>
+        android:orientation="vertical"
+        android:gravity="start"
+        android:layout_marginStart="50dp"
+        >
+        <TextView
+            android:id="@+id/user_location_TV"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/your_location_n_a"
+            android:textSize="15sp"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:textAllCaps="true"
+            android:layout_marginBottom="15dp"
+            />
+        <TextView
+            android:id="@+id/structure_name_main_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/structure"
+            android:textSize="15sp"
+            android:layout_marginTop="20dp"
+            />
+        <TextView
+            android:id="@+id/floor_main_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/floor"
+            android:textSize="15sp"
+            android:layout_marginTop="10dp"
+            />
+        <TextView
+            android:id="@+id/beacon_main_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/beacon_connected_n_a"
+            android:textSize="15sp"
+            android:layout_marginTop="10dp"
+            />
+        <TextView
+            android:id="@+id/rssi_main_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/rssi_n_a"
+            android:textSize="15sp"
+            android:layout_marginTop="10dp"
+            />
+    </LinearLayout>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/structure_page_fab"
@@ -36,17 +98,6 @@
         android:layout_margin="10dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"/>
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/inbox_fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/structure_page_fab"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="10dp"
-        android:src="@drawable/ic_message" />
-
-
 
 
 

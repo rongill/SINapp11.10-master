@@ -32,7 +32,7 @@ public class LocationListAdapter extends ArrayAdapter<Location> {
     private Context context;
 
     private static class ViewHolder{
-        TextView nameTv, categoryTv, beaconTv, coordinatesTv;
+        TextView nameTv, categoryTv, beaconTv, coordinatesTv, floorTv, lastModifiedTv;
         Button modifyBtn, removeBtn;
     }
 
@@ -73,6 +73,8 @@ public class LocationListAdapter extends ArrayAdapter<Location> {
             viewHolder.categoryTv = (TextView)convertView.findViewById(R.id.location_category_item_listView);
             viewHolder.beaconTv = (TextView)convertView.findViewById(R.id.related_beacon_item_listView);
             viewHolder.coordinatesTv = (TextView)convertView.findViewById(R.id.coordinates_item_listView);
+            viewHolder.floorTv = (TextView)convertView.findViewById(R.id.floor_item_listView);
+            viewHolder.lastModifiedTv = (TextView) convertView.findViewById(R.id.date_modified_item_listView);
             viewHolder.modifyBtn = (Button) convertView.findViewById(R.id.modify_location_button);
             viewHolder.removeBtn = (Button) convertView.findViewById(R.id.remove_location_button);
 
@@ -84,17 +86,21 @@ public class LocationListAdapter extends ArrayAdapter<Location> {
         if(location != null){
             viewHolder.nameTv.setText(location.getName());
             viewHolder.categoryTv.setText(location.getCategory());
-            viewHolder.beaconTv.setText(location.getBeacon());
+            viewHolder.beaconTv.setText(location.getBeaconName());
+            viewHolder.floorTv.setText(location.getFloor());
 
-            String coordinates = "( " + String.valueOf(getItem(position).getCoordinates().getX()) + " , " + String.valueOf(getItem(position).getCoordinates().getY() + " )");
+            String coordinates = "( " + String.valueOf(location.getCoordinates().getX()) + " , " + String.valueOf(location.getCoordinates().getY() + " )");
             viewHolder.coordinatesTv.setText(coordinates);
+
+            String lastModified = location.getDateModified().getDate() + " - " + location.getDateModified().getTime();
+            viewHolder.lastModifiedTv.setText(lastModified);
 
             viewHolder.modifyBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     //if modified pressed, will send to add/modifylocation popup page, sending the item to modify.
                     Intent modifyLocationIntent = new Intent(context, AddModifyLocationActivity.class);
-                    modifyLocationIntent.putExtra("LOCATION_MODIFY", getItem(position));
+                    modifyLocationIntent.putExtra("LOCATION_MODIFY", location);
                     context.startActivity(modifyLocationIntent);
                 }
             });
@@ -102,16 +108,16 @@ public class LocationListAdapter extends ArrayAdapter<Location> {
             viewHolder.removeBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    locations.remove(getItem(position));
+                    locations.remove(location);
                     LocationListAdapter.this.notifyDataSetChanged();
 
                     Query locationToRemoveQuery = FirebaseDatabase.getInstance().getReference()
-                            .child("locations").orderByChild("name").equalTo(location.getName());
+                            .child("structure").child(location.getStructure()).child("locations").orderByChild("name").equalTo(location.getName());
                     locationToRemoveQuery.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                             DatabaseReference locationToRemove = FirebaseDatabase.getInstance().getReference()
-                                    .child("locations");
+                                    .child("structure").child(location.getStructure()).child("locations");
                             for(DataSnapshot ds : dataSnapshot.getChildren()){
                                 locationToRemove.child(ds.getKey()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override

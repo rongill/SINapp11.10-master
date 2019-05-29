@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activities.MessageBox">
+
+    <TextView
+        android:id="@+id/message_box_header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="20dp"
+        android:text="Type your message"
+        android:textSize="30sp"/>
+
+    <EditText
+        android:id="@+id/message_box_input"
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:layout_below="@+id/message_box_header"
+        android:layout_margin="16dp"
+        android:inputType="textMultiLine"
+        android:lines="15"
+        android:minLines="6"
+        android:maxLines="20"
+        android:gravity="top|start"/>
+    <Button
+        android:id="@+id/message_submit_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/message_box_input"
+        android:layout_margin="16dp"
+        android:text="SUBMIT"
+        android:backgroundTint="@color/colorPrimary"
+        />
+
+
+</RelativeLayout>

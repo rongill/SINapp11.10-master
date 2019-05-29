@@ -32,30 +32,19 @@ public class FriendListAdapter extends ArrayAdapter<String> {
         ImageView connectionStatus;
         TextView friendName;
     }
-
     public FriendListAdapter(final ArrayList<String> friendsUidList, Context context, DatabaseReference userFriendsRef){
+
         super(context, R.layout.friend_list_layout, friendsUidList);
+        this.friendsUidList = friendsUidList;
+        this.mContext = context;
 
-        userFriendsRef.addChildEventListener(new ChildEventListener() {
+        userFriendsRef.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                friendsUidList.add(dataSnapshot.getValue().toString());
-                FriendListAdapter.this.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(DataSnapshot ds : dataSnapshot.getChildren()) {
+                    friendsUidList.add(ds.getValue().toString());
+                    FriendListAdapter.this.notifyDataSetChanged();
+                }
             }
 
             @Override
@@ -63,9 +52,6 @@ public class FriendListAdapter extends ArrayAdapter<String> {
 
             }
         });
-
-        this.friendsUidList = friendsUidList;
-        this.mContext = context;
     }
 
     @Override
@@ -109,7 +95,7 @@ public class FriendListAdapter extends ArrayAdapter<String> {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                viewHolder.friendName.setText(dataSnapshot.getValue(User.class).getUsername());
+                viewHolder.friendName.setText(dataSnapshot.child("username").getValue().toString());
 
                 switch (dataSnapshot.getValue(User.class).getStatus()) {
                     case "connected":
@@ -118,6 +104,8 @@ public class FriendListAdapter extends ArrayAdapter<String> {
                     case "disconnected":
                         viewHolder.connectionStatus.setImageResource(R.drawable.friend_disconnected_icon);
                         break;
+                    case "navigating":
+                        viewHolder.connectionStatus.setImageResource((R.drawable.navigation_status_icon));
                 }
 
             }

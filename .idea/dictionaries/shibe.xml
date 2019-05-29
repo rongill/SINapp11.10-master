@@ -2,6 +2,7 @@
   <dictionary name="shibe">
     <words>
       <w>firebase</w>
+      <w>rssi</w>
     </words>
   </dictionary>
 </component>

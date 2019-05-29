@@ -23,14 +23,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/add_location_header"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="10dp"
         android:hint="Location Name"/>
     <EditText
         android:id="@+id/location_category_ET"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/location_name_ET"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="10dp"
         android:hint="Category"/>
 
     <EditText
@@ -38,7 +38,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/location_category_ET"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="10dp"
         android:hint="Related Beacon Id"
         />
 
@@ -47,7 +47,7 @@
         android:layout_width="50dp"
         android:layout_height="wrap_content"
         android:layout_below="@+id/beacon_id_ET"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="10dp"
         android:gravity="center"
         android:hint="X" />
 
@@ -58,15 +58,22 @@
         android:layout_below="@+id/beacon_id_ET"
         android:layout_toEndOf="@+id/x_axis"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="10dp"
         android:gravity="center"
         android:hint="Y" />
+    <EditText
+        android:id="@+id/floor_ET"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/y_axis"
+        android:layout_marginTop="10dp"
+        android:hint="Floor" />
 
     <Button
         android:id="@+id/submit_location_btn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/y_axis"
+        android:layout_below="@+id/floor_ET"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="30dp"
         android:text="Submit changes"

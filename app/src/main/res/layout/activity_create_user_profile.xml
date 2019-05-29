@@ -13,15 +13,16 @@
         android:layout_gravity="center"
         app:srcCompat="@drawable/sinicon"
         android:rotation="180"
-        android:layout_centerHorizontal="true"/>
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="50dp"/>
     <TextView
         android:id="@+id/set_profileTV"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Set Profile"
+        android:text="Profile &amp; Preferences"
         android:textSize="20sp"
-        android:textStyle="bold"
         android:layout_below="@+id/imageView"
+        android:layout_marginTop="20dp"
         android:layout_centerHorizontal="true"/>
 
     <ScrollView

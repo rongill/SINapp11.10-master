@@ -1,5 +1,8 @@
 package com.rongill.rsg.sinprojecttest.basic_objects;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.io.Serializable;
 
 public class RequestMessage implements Serializable {
@@ -10,6 +13,7 @@ public class RequestMessage implements Serializable {
     private String senderUsername;
     private String requestType;
     private String requestStatus;
+    private MyCalendar dateCreated;
 
     public RequestMessage(String receiverUid, String senderUid, String senderUsername, String requestType, String requestStatus){
         this.receiverUid = receiverUid;
@@ -17,9 +21,20 @@ public class RequestMessage implements Serializable {
         this.senderUsername = senderUsername;
         this.requestType = requestType;
         this.requestStatus = requestStatus;
+        this.dateCreated = new MyCalendar();
     }
 
     public RequestMessage(){}
+
+    public MyCalendar getDateCreated() {
+        return dateCreated;
+    }
+
+    public void setDateCreated(MyCalendar dateCreated) {
+        this.dateCreated = dateCreated;
+    }
+
+
 
     public String getReceiverUid() {
         return receiverUid;
@@ -59,5 +74,12 @@ public class RequestMessage implements Serializable {
 
     public void setSenderUsername(String senderUsername) {
         this.senderUsername = senderUsername;
+    }
+
+    public void sendRequest(RequestMessage message){
+        DatabaseReference receiverInboxRef = FirebaseDatabase.getInstance().getReference().
+                child("users-inbox").child(message.getReceiverUid());
+
+        receiverInboxRef.push().setValue(message);
     }
 }
