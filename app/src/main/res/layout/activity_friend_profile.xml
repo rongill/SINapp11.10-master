@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".activities.FriendProfileActivity"
+    android:background="@drawable/popup_window_bg"
     >
 
 
@@ -24,48 +25,50 @@
         android:layout_below="@+id/avatar_imageView"
         android:gravity="center_horizontal"
         android:padding="10dp"
-        android:layout_marginTop="20dp">
+        android:layout_marginTop="40dp">
 
         <TextView
             android:id="@+id/friend_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Friend name"
+            android:text="@string/friend_name"
             android:textSize="20sp"
             android:textStyle="bold" />
         <TextView
             android:id="@+id/connection_status_textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Connected/Disconnected"/>
+            android:text="@string/connected_disconnected"/>
 
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:orientation="horizontal"
+        android:layout_height="150dp"
+        android:orientation="vertical"
         android:layout_below="@id/header_layout"
-        android:weightSum="3"
-        android:layout_marginTop="150dp"
+        android:weightSum="4"
+        android:layout_marginTop="60dp"
         android:padding="1dp">
 
         <LinearLayout
             android:onClick="actionPressed"
             android:id="@+id/poke_btn"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
             android:background="@color/colorPrimary"
-            android:layout_weight="1"
-            android:layout_margin="1dp"
+            android:layout_weight="2"
+            android:layout_margin="3dp"
             android:gravity="center"
             android:orientation="horizontal">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Poke"
+                android:text="@string/send_poke_message"
                 android:textColor="#ffffff"
                 android:textSize="15sp"
+                android:textAllCaps="true"
+
 
                 />
 
@@ -73,44 +76,25 @@
         <LinearLayout
             android:onClick="actionPressed"
             android:id="@+id/liveLocation"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
             android:background="@color/colorPrimaryDark"
-            android:layout_weight="1"
-            android:layout_margin="1dp"
+            android:layout_weight="2"
+            android:layout_margin="3dp"
             android:orientation="horizontal"
             android:gravity="center">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Live Location"
+                android:text="@string/share_live_location"
                 android:textColor="#ffffff"
                 android:textSize="15sp"
+                android:textAllCaps="true"
 
                 />
 
         </LinearLayout>
-        <LinearLayout
-            android:onClick="actionPressed"
-            android:id="@+id/sendLocatonBtn"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:background="#00695c"
-            android:layout_weight="1"
-            android:layout_margin="1dp"
-            android:orientation="horizontal"
-            android:gravity="center">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Send Your Location"
-                android:textColor="#ffffff"
-                android:textSize="15sp"
-                android:gravity="center"
 
-                />
-
-        </LinearLayout>
     </LinearLayout>
 
 </RelativeLayout>

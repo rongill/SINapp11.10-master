@@ -48,4 +48,8 @@
     <string name="beacon_connected_n_a">Beacon connected- N/A</string>
     <string name="rssi_n_a">Rssi- N/A</string>
     <string name="location">Location</string>
+    <string name="share_live_location">Share Live Location</string>
+    <string name="friend_name">Friend name</string>
+    <string name="connected_disconnected">Connected/Disconnected</string>
+    <string name="send_poke_message">Send Poke Message</string>
 </resources>

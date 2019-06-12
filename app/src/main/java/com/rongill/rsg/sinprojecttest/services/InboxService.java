@@ -29,8 +29,6 @@ public class InboxService extends Service {
     private DatabaseReference userInboxRef;
     private User currentUser;
 
-
-
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
 
@@ -72,7 +70,8 @@ public class InboxService extends Service {
                             NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getBaseContext(),
                                     "SIN")
                                     .setContentTitle("Friendly Poke")
-                                    .setContentText(tempMessage.getSenderUsername() + " poked you! Tap to launch " + tempMessage.getSenderUsername() + " profile page")
+                                    .setContentText(tempMessage.getSenderUsername() + " poked you! Tap to launch "
+                                            + tempMessage.getSenderUsername() + " profile page")
                                     .setSmallIcon(R.drawable.sinicon)
                                     .setPriority(NotificationCompat.PRIORITY_HIGH)
                                     .setContentIntent(pi)

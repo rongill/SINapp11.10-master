@@ -43,10 +43,11 @@ public class LiveLocationService extends Service {
         String friendNavPushKey = intent.getStringExtra("FRIEND_NAV_LOG_PUSHKEY");
         String userNavigationPushkey = intent.getStringExtra("NAVIGATION_PUSHKEY");
 
-
+        //init a new BLE scanner and start scan
         myBleScanner = new MyBleScanner((BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE));
         myBleScanner.initLeScan(scanCallback, true);
 
+        //user status ref, for changing from navigating to connected
         final DatabaseReference userNavLogRef = FirebaseDatabase.getInstance().getReference()
                 .child("users-navigation-log").child(currentUser.getUserId()).child(userNavigationPushkey).child("status");
 
@@ -69,7 +70,6 @@ public class LiveLocationService extends Service {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
                                     makeNotification("friend stopped the navigation, Live location sharing disabled.");
-
                                     DatabaseReference userStatusRef = FirebaseDatabase.getInstance().getReference()
                                             .child("users").child(currentUser.getUserId()).child("status");
                                     userStatusRef.setValue("connected");
@@ -77,9 +77,7 @@ public class LiveLocationService extends Service {
                                     LiveLocationService.this.stopSelf();
                                 }
                             });
-
                             break;
-
                         case "arrived":
                             isSharing = false;
                             myBleScanner.initLeScan(scanCallback, false);
@@ -87,7 +85,6 @@ public class LiveLocationService extends Service {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
                                     makeNotification("Your friend is nearby! have a look around.");
-
                                     DatabaseReference userStatusRef = FirebaseDatabase.getInstance().getReference()
                                             .child("users").child(currentUser.getUserId()).child("status");
                                     userStatusRef.setValue("connected");
@@ -145,7 +142,6 @@ public class LiveLocationService extends Service {
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setContentIntent(contentIntent)
                 .setAutoCancel(true);
-        //TODO not canceling the noti. when pressed
 
         NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(getBaseContext());
         notificationManagerCompat.notify(3, notificationBuilder.build());

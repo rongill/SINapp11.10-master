@@ -320,11 +320,7 @@ public class SinMainActivity extends AppCompatActivity implements SensorEventLis
         if (suggestionsListViewAdapter != null) {
             searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                 @Override
-                public boolean onQueryTextSubmit(String query) {
-
-                    return false;
-                }
-
+                public boolean onQueryTextSubmit(String query) { return false; }
                 @Override
                 public boolean onQueryTextChange(String newText) {
                     if (locationList != null) {
@@ -750,6 +746,10 @@ public class SinMainActivity extends AppCompatActivity implements SensorEventLis
 
                     final Location destination = (Location) extras.getSerializable("LOCATION");
 
+                    final ImageView stopNavBtn = (ImageView)findViewById(R.id.stop_nav_btn);
+                    stopNavBtn.setVisibility(View.VISIBLE);
+
+
                     //TODO add all TV's to the compass
                     compass.titleTv = (TextView) findViewById(R.id.action_display_view);
                     compass.setUserLocationTv((TextView) findViewById(R.id.user_location_TV));
@@ -772,9 +772,19 @@ public class SinMainActivity extends AppCompatActivity implements SensorEventLis
                     userNavigationLogRef.child(navigationLogKey).child("destination").setValue(destination).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
-                            staticIndoorNavigation = new StaticIndoorNavigation(getBaseContext(), mUserUtil.getCurrentUser(),destination, compass, navigationLogKey);
+                            staticIndoorNavigation = new StaticIndoorNavigation(getBaseContext(), mUserUtil.getCurrentUser()
+                                    ,destination, compass, navigationLogKey);
                             staticIndoorNavigation.startNavigation();
                             Log.i(TAG, "Static navigation started");
+
+                            stopNavBtn.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    staticIndoorNavigation.stopNavigation("stopped by user");
+                                    stopNavBtn.setVisibility(View.INVISIBLE);
+                                    makeToast("Navigation stopped");
+                                }
+                            });
                         }
                     });
 
@@ -787,7 +797,6 @@ public class SinMainActivity extends AppCompatActivity implements SensorEventLis
                 }
                 break;
                 //coming back from the friend profile page, set the users navigation log entry
-            //TODO prevent multiple dynamic nav request.
             case LIVE_LOCATION_RESULT_CODE:
 
                 final RequestMessage message= (RequestMessage)data.getSerializableExtra("DYNAMIC_NAVIGATION_REQUEST_MESSAGE");
@@ -807,7 +816,6 @@ public class SinMainActivity extends AppCompatActivity implements SensorEventLis
                             if (dateStarted.timeDiffInSeconds(new MyCalendar()) < 900) {
                                 if (dataSnapshot.child("requestStatus").getValue().toString().contains("confirmed")) {
 
-                                    //TODO check if this works, the confirmed string contains also the friend nav log key for this user to listen to any changes.
                                     String friendNavLogPushKey = dataSnapshot.child("requestStatus").getValue().toString().substring(10);
 
                                     Map<String, String> newPost = new HashMap<>();
@@ -826,7 +834,8 @@ public class SinMainActivity extends AppCompatActivity implements SensorEventLis
                                     userNavigationLogRef.child(pushKey).child("date-started").setValue(new MyCalendar());
 
 
-                                    //If friend confirmed the navigation to user live location, liveLocation service will start and the user navigation log will be created.
+                                    //If friend confirmed the navigation to user live location,
+                                    // liveLocation service will start and the user navigation log will be created.
                                     Intent shareLiveLocationServiceIntent = new Intent(getBaseContext(), LiveLocationService.class);
                                     shareLiveLocationServiceIntent.putExtra("CURRENT_USER", mUserUtil.getCurrentUser());
                                     shareLiveLocationServiceIntent.putExtra("NAVIGATION_PUSHKEY", pushKey);
@@ -836,7 +845,7 @@ public class SinMainActivity extends AppCompatActivity implements SensorEventLis
 
                                     //update user status to navigating, will prevent multiple navigation sessions.
                                     DatabaseReference userStatusRef = FirebaseDatabase.getInstance().getReference()
-                                            .child("users").child(mUserUtil.getCurrentUser().getUserId()).child("status");
+                                            .child("users").child(mUserUtil.getCurrentUser().getUserId()).child("navigation-status");
                                     userStatusRef.setValue("navigating");
 
                                     //TODO make a stop nav btn visible and actionable.
@@ -877,6 +886,7 @@ public class SinMainActivity extends AppCompatActivity implements SensorEventLis
 
             Map<String,String> newPost = new HashMap<>();
 
+            //create navigation log
             newPost.put("destination-uid", dynamicNavRequestMessage.getSenderUid());
             newPost.put("destination-username", dynamicNavRequestMessage.getSenderUsername());
             newPost.put("destination-beacon","");
@@ -907,8 +917,9 @@ public class SinMainActivity extends AppCompatActivity implements SensorEventLis
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-
-            DynamicIndoorNavigation dynamicIndoorNavigation = new DynamicIndoorNavigation(this, mUserUtil.getCurrentUser(),dynamicNavRequestMessage, compass, pushKey);
+            //start dynamic navigation to live location
+            DynamicIndoorNavigation dynamicIndoorNavigation = new DynamicIndoorNavigation(this, mUserUtil.getCurrentUser()
+                    ,dynamicNavRequestMessage, compass, pushKey);
 
             //TODO make a stop nav btn visible and actionable.
 
@@ -920,6 +931,10 @@ public class SinMainActivity extends AppCompatActivity implements SensorEventLis
 
     private void makeToast(String message){
         Toast.makeText(getBaseContext(), message, Toast.LENGTH_LONG).show();
+    }
+
+    private void stopNavigationBtn(){
+
     }
 
 

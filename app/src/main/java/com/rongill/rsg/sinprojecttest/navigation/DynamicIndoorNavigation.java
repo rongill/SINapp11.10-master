@@ -44,7 +44,7 @@ public class DynamicIndoorNavigation {
         initDestination(navRequestMessage.getSenderUid());
     }
 
-    public void initDestination(String friendUserId) {
+    private void initDestination(String friendUserId) {
 
         destination = new Location();
 
@@ -61,7 +61,7 @@ public class DynamicIndoorNavigation {
                     compass.getUserLocationTv().setText("remote user has disconnected from server");
                     staticIndoorNavigation.stopNavigation("friend DC, mid session");
                     Log.i(TAG, "Dynamic navigation stopped-remote user has disconnected");
-                } else { //TODO maybe change the listener to the nav log, for that will need to update the beacon in the nav log.
+                } else {
                     destination.setName(dataSnapshot.child("username").getValue().toString());
                     destination.setCategory("friend");
                     destination.setBeaconName(dataSnapshot.child("beacon").getValue().toString());
@@ -97,7 +97,7 @@ public class DynamicIndoorNavigation {
                         staticIndoorNavigation = new StaticIndoorNavigation(context, currentUser, destination, compass, logKey);
                         staticIndoorNavigation.startNavigation();
                     }
-
+                    //if not the first read, update the destination when changed in the data base.
                     else
                         staticIndoorNavigation.setDestination(destination);
                 }
@@ -122,10 +122,10 @@ public class DynamicIndoorNavigation {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()){
                     String friendNavToken = dataSnapshot.getValue().toString();
+                    //method for listening to any changes in the status of the sharer side.
                     sharingStatusListener(friendUid, friendNavToken);
                 }
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
@@ -135,8 +135,7 @@ public class DynamicIndoorNavigation {
 
     private void sharingStatusListener(String friendUid, String friendNavToken){
 
-        DatabaseReference friendSharingLogRef = FirebaseDatabase.getInstance().getReference()
-                .child("users-navigation-log")
+        DatabaseReference friendSharingLogRef = FirebaseDatabase.getInstance().getReference().child("users-navigation-log")
                 .child(friendUid)
                 .child(friendNavToken)
                 .child("status");
@@ -145,7 +144,7 @@ public class DynamicIndoorNavigation {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists())
                     if(dataSnapshot.getValue().toString().equals("sharing-stopped")){
-                    //TODO stop the dyn nav and update DB
+                    //stop the dyn nav, update DB and change user status to connected (was navigating)
                     staticIndoorNavigation.stopNavigation("stopped by friend.");
                     DatabaseReference userNavLogstatusRef = FirebaseDatabase.getInstance().getReference()
                     .child("users-navigation-log").child(currentUser.getUserId()).child(logKey)
@@ -198,7 +197,6 @@ public class DynamicIndoorNavigation {
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setContentIntent(contentIntent)
                 .setAutoCancel(true);
-        //TODO not canceling the noti. when pressed
 
         NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(context);
         notificationManagerCompat.notify(3, notificationBuilder.build());

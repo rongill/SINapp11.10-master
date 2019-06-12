@@ -1,14 +1,20 @@
 package com.rongill.rsg.sinprojecttest.activities;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -34,6 +40,14 @@ public class StructureInfoActivity extends AppCompatActivity {
         //get the structure name from the intent and set the location LV of that structure.
         final String structureName = getIntent().getStringExtra("STRUCTURE_NAME");
 
+        TextView structureNameTv = (TextView)findViewById(R.id.structure_name);
+        structureNameTv.setText(structureName);
+        setStructureAddress(structureName);
+
+        //give the friend image a rounded border/
+        setRoundedImage();
+
+
         final ListView expandableListview = (ListView)findViewById(R.id.expandable_listView);
         expandableListviewAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, new ArrayList<String>());
         expandableListview.setAdapter(expandableListviewAdapter);
@@ -51,6 +65,24 @@ public class StructureInfoActivity extends AppCompatActivity {
         // set the location name strings in categories to display on the expendable ListView.
         setFullLocationListFromDB(structureName);
 
+
+    }
+
+    private void setStructureAddress(String structureName) {
+        DatabaseReference structureAddressRef = FirebaseDatabase.getInstance().getReference()
+                .child("structures").child(structureName).child("address");
+        structureAddressRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                TextView structureAddressTv = (TextView)findViewById(R.id.structure_address_main_TV);
+                structureAddressTv.setText(dataSnapshot.getValue().toString());
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @Override
@@ -114,5 +146,14 @@ public class StructureInfoActivity extends AppCompatActivity {
                 break;
 
         }
+    }
+
+    public void setRoundedImage(){
+        ImageView avatarImageView = (ImageView)findViewById(R.id.structure_image);
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.location_place_holder);
+        RoundedBitmapDrawable roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(getResources(),bitmap);
+        roundedBitmapDrawable.setCircular(true);
+        avatarImageView.setImageDrawable(roundedBitmapDrawable);
+
     }
 }

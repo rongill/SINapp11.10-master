@@ -34,12 +34,12 @@
         android:layout_width="match_parent"
         android:layout_height="45dp"
         android:orientation="horizontal"
-        android:weightSum="4"
+        android:weightSum="3"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/structure_name"
-        app:layout_constraintVertical_bias=".080000012">
+        app:layout_constraintVertical_bias=".20000012">
 
         <LinearLayout
             android:onClick="expandCategoryList"
@@ -48,13 +48,13 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@color/colorPrimary"
-            android:gravity="center_vertical"
+            android:gravity="center"
+
             android:orientation="horizontal">
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
                 android:src="@drawable/ic_expand_listview" />
 
             <TextView
@@ -73,13 +73,12 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="#00897b"
-            android:gravity="center_vertical"
+            android:gravity="center"
             android:orientation="horizontal">
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
                 android:src="@drawable/ic_expand_listview" />
 
             <TextView
@@ -98,13 +97,12 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="#00a191"
-            android:gravity="center_vertical"
+            android:gravity="center"
             android:orientation="horizontal">
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
                 android:src="@drawable/ic_expand_listview" />
 
             <TextView
@@ -116,30 +114,7 @@
 
         </LinearLayout>
 
-        <LinearLayout
-            android:onClick="expandCategoryList"
-            android:id="@+id/favorite_expandable"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="#00897b"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
 
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:src="@drawable/ic_expand_listview" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Favorite"
-                android:textColor="#ffffff"
-                android:textSize="15sp" />
-
-        </LinearLayout>
 
     </LinearLayout>
 
@@ -157,6 +132,20 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/expandable_category_tabs"
         app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <TextView
+        android:id="@+id/structure_address_main_TV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="address"
+        app:layout_constraintBottom_toTopOf="@+id/expandable_category_tabs"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/structure_name"
+        app:layout_constraintVertical_bias="0.375" />
 
 
 </android.support.constraint.ConstraintLayout>

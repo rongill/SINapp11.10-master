@@ -53,12 +53,24 @@ public class StaticIndoorNavigation extends IndoorNavigation {
                 .child("users-navigation-log").child(currentUser.getUserId()).child(pushKey)
                 .child("status");
 
+        hasArrived = true;
+
+        compass.compassImage.setRotation(90);
+        compass.titleTv.setText("click image to scan your location");
+        compass.compassImage.setClickable(true);
+        compass.getUserLocationTv().setText("");
+
         userNavigationLogStatusRef.setValue(s).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 Log.w(TAG, "Static navigation process stopped by user/System.");
             }
         });
+
+        //update user status to navigating, will prevent multiple navigation sessions.
+        DatabaseReference userStatusRef = FirebaseDatabase.getInstance().getReference()
+                .child("users").child(currentUser.getUserId()).child("navigation-status");
+        userStatusRef.setValue("idle");
 
     }
 
@@ -83,7 +95,6 @@ public class StaticIndoorNavigation extends IndoorNavigation {
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setContentIntent(contentIntent)
                 .setAutoCancel(true);
-        //TODO not canceling the noti. when pressed
 
         NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(context);
         notificationManagerCompat.notify(3, notificationBuilder.build());
@@ -104,19 +115,14 @@ public class StaticIndoorNavigation extends IndoorNavigation {
                     staticNavBleScanner.setBeaconDataFromServer(scannedBeacon);
                     currentUser.setCurrentBeacon(staticNavBleScanner.getNearestBeacon());
                     if (currentUser.getCurrentBeacon().getName().equals(destination.getBeaconName())) {
-                        hasArrived = true;
+
                         staticNavBleScanner.initLeScan(staticNavScanCallback, false);
-                        compass.compassImage.setRotation(90);
+
                         setNavigationLogStatus("arrived");
                         arrivalNotificationMessage();
-                        compass.titleTv.setText("click image to scan your location");
-                        compass.compassImage.setClickable(true);
-                        compass.getUserLocationTv().setText("");
+                        stopNavigation("arrived");
 
-                        //update user status to navigating, will prevent multiple navigation sessions.
-                        DatabaseReference userStatusRef = FirebaseDatabase.getInstance().getReference()
-                                .child("users").child(currentUser.getUserId()).child("navigation-status");
-                        userStatusRef.setValue("idle");
+
                     } else {
                         //calc the direction based on current user location angle to the destination coordinates.
                         //set the float value to the directionAzimuth var in indoor navigation abstract class.

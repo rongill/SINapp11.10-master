@@ -22,15 +22,11 @@ public class StructureMessageBoxService extends Service {
 
     private String structureName;
 
-
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
         structureName = intent.getStringExtra("STRUCTURE");
         DatabaseReference structureMessageRef = FirebaseDatabase.getInstance().getReference()
                 .child("structures").child(structureName).child("management-notifications");
-
-
         structureMessageRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {

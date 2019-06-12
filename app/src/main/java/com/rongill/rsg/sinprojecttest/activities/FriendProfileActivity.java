@@ -8,7 +8,10 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
+import android.view.Gravity;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -45,6 +48,18 @@ public class FriendProfileActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friend_profile);
+
+        DisplayMetrics dm = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(dm);
+        int width = dm.widthPixels;
+        int height = dm.heightPixels;
+
+        getWindow().setLayout((int)(width*.7),(int)(height*.65));
+
+        WindowManager.LayoutParams params = getWindow().getAttributes();
+        params.gravity = Gravity.CENTER;
+        params.x = 0;
+        params.y = -20;
 
         friendName = (TextView)findViewById(R.id.friend_name);
         connectionStatus = (TextView)findViewById(R.id.connection_status_textView);
@@ -83,7 +98,9 @@ public class FriendProfileActivity extends AppCompatActivity {
             case R.id.liveLocation:
                 switch (friend.getStatus()) {
                     case "connected":
-                        sendNavigationRequest();
+                        if(currentUser.getStatus().equals("connected"))
+                            sendNavigationRequest();
+                        else makeToast("cannot send navigation request, you are navigating.");
                         break;
                     case "disconnected":
                         makeToast("Cannot sent meet request, friend disconnected.");
@@ -94,10 +111,6 @@ public class FriendProfileActivity extends AppCompatActivity {
                 }
                 break;
 
-                //TODO no need, delete!
-            case R.id.sendLocatonBtn:
-                sendUserLocation();
-                break;
         }
     }
 
@@ -154,7 +167,6 @@ public class FriendProfileActivity extends AppCompatActivity {
 
     //send a RequestMassage to the friend with request type navigation.
     private void sendNavigationRequest(){
-
             RequestMessage liveLocationRequestMessage =
                     new RequestMessage(friend.getUserId(),
                             currentUser.getUserId(),
