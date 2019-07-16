@@ -38,13 +38,11 @@ public class StaticIndoorNavigation extends IndoorNavigation {
     @Override
     public void startNavigation() {
         super.startNavigation();
-
         //init the bleScanner with the scanner from Main activity.
         staticNavBleScanner.setScanner(staticNavBleScanner.getScanner());
 
         //start the LE scan, using the scanner from Main activity and the MyBleScanner scan callbacks.
         staticNavBleScanner.initLeScan(staticNavScanCallback, true);
-
     }
 
     public void stopNavigation(String s){
@@ -54,7 +52,6 @@ public class StaticIndoorNavigation extends IndoorNavigation {
                 .child("status");
 
         hasArrived = true;
-
         compass.compassImage.setRotation(90);
         compass.titleTv.setText("click image to scan your location");
         compass.compassImage.setClickable(true);
@@ -71,7 +68,6 @@ public class StaticIndoorNavigation extends IndoorNavigation {
         DatabaseReference userStatusRef = FirebaseDatabase.getInstance().getReference()
                 .child("users").child(currentUser.getUserId()).child("navigation-status");
         userStatusRef.setValue("idle");
-
     }
 
 
@@ -121,24 +117,17 @@ public class StaticIndoorNavigation extends IndoorNavigation {
                         setNavigationLogStatus("arrived");
                         arrivalNotificationMessage();
                         stopNavigation("arrived");
-
-
                     } else {
                         //calc the direction based on current user location angle to the destination coordinates.
                         //set the float value to the directionAzimuth var in indoor navigation abstract class.
                         calcDirectionToDestination(currentUser.getCurrentBeacon().getCoordinates(), destination.getCoordinates());
-
                         //calc the distance to destination based on user current beacon
                         calcDistanceToDestination();
-
                         //rotate the image of the compass according to the directionAzimuth in degrees, calculated in the above method.
                         compass.compassImage.setRotation(90 + directionAzimuth);
-
                         String distanceToDestination = "distance to " + destination.getName() + " : " + (int) distance + "m";
                         compass.getUserLocationTv().setText(distanceToDestination);
                     }
-
-
                 } catch (NullPointerException e) {
                     Log.e(TAG, e.getMessage());
                 }

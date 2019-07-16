@@ -65,11 +65,10 @@ public abstract class IndoorNavigation {
                 .distanceToOtherPoint(destination.getCoordinates());
     }
 
+    //calculate the angel from current location to destination, use Point method "distanceToOtherPoint" and base algorithm.
     protected void calcDirectionToDestination(Point currentCoordinates, Point destination){
-
         try{
             int alpha;
-
             switch (currentCoordinates.relativePosition(destination)){
                 case 1:
                     alpha = (int)Math.toDegrees(Math.asin(Math.abs
