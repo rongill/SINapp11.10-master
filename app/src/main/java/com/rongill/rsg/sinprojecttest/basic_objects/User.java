@@ -41,7 +41,7 @@ public class User implements Serializable {
     public void setCurrentBeacon(MyBeacon currentBeacon) {
         this.currentBeacon = currentBeacon;
         updateUserBeaconNameInDB(currentBeacon.getName());
-        this.currentBeacon.getBeaconDetailsDB();
+        //this.currentBeacon.getBeaconDetailsDB();
     }
 
     public ArrayList<String> getFriends(){

@@ -57,7 +57,6 @@ public class LocationSettingActivity extends AppCompatActivity {
     }
 
     private void setMaintenanceUser() {
-
         Intent intent = getIntent();
         User tempUser = (User) intent.getSerializableExtra("USER");
         maintenanceUser = new MaintenanceUser(
@@ -71,7 +70,6 @@ public class LocationSettingActivity extends AppCompatActivity {
                 maintenanceUser.setStructure(dataSnapshot.getValue().toString());
                 setLocationsList();
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 

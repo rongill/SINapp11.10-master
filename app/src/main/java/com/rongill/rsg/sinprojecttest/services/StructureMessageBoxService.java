@@ -25,34 +25,38 @@ public class StructureMessageBoxService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         structureName = intent.getStringExtra("STRUCTURE");
-        DatabaseReference structureMessageRef = FirebaseDatabase.getInstance().getReference()
+        final DatabaseReference structureMessageRef = FirebaseDatabase.getInstance().getReference()
                 .child("structures").child(structureName).child("management-notifications");
         structureMessageRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 MyCalendar postedDate = dataSnapshot.child("date-posted").getValue(MyCalendar.class);
-                int timeDiff = postedDate.timeDiffInSeconds(new MyCalendar());
-                if(timeDiff<1000){
+                if (postedDate != null) {
+                    int timeDiff = postedDate.timeDiffInSeconds(new MyCalendar());
+                    if (timeDiff < 1000) {
 
-                    Intent intent = new Intent(getBaseContext(), SinMainActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        Intent intent = new Intent(getBaseContext(), SinMainActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-                    PendingIntent pi = PendingIntent.getActivity(getBaseContext(), 0, intent,
-                            PendingIntent.FLAG_UPDATE_CURRENT);
+                        PendingIntent pi = PendingIntent.getActivity(getBaseContext(), 0, intent,
+                                PendingIntent.FLAG_UPDATE_CURRENT);
 
-                    NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getBaseContext(),
-                            "SIN")
-                            .setContentTitle(structureName + ": Management message")
-                            .setContentText(dataSnapshot.child("message").getValue().toString())
-                            .setSmallIcon(R.drawable.sinicon)
-                            .setPriority(NotificationCompat.PRIORITY_HIGH)
-                            .setContentIntent(pi)
-                            .setAutoCancel(true);
+                        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getBaseContext(),
+                                "SIN")
+                                .setContentTitle(structureName + ": Management message")
+                                .setContentText(dataSnapshot.child("message").getValue().toString())
+                                .setSmallIcon(R.drawable.sinicon)
+                                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                                .setContentIntent(pi)
+                                .setAutoCancel(true);
 
-                    NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(getBaseContext());
-                    notificationManagerCompat.notify(0, notificationBuilder.build());
+                        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(getBaseContext());
+                        notificationManagerCompat.notify(0, notificationBuilder.build());
+                    } else {
+                        structureMessageRef.child(dataSnapshot.getKey()).removeValue();
+                    }
+
                 }
-
             }
 
             @Override

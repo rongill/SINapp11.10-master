@@ -19,7 +19,7 @@
         android:allowBackup="true"
         android:icon="@drawable/sinicon"
         android:label="SIN"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@drawable/sinicon"
         android:supportsRtl="false"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">

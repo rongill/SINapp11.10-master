@@ -47,6 +47,8 @@ public class LiveLocationService extends Service {
         myBleScanner = new MyBleScanner((BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE));
         myBleScanner.initLeScan(scanCallback, true);
 
+        makeNotification("Friend is navigating to your location.");
+
         //user status ref, for changing from navigating to connected
         final DatabaseReference userNavLogRef = FirebaseDatabase.getInstance().getReference()
                 .child("users-navigation-log").child(currentUser.getUserId()).child(userNavigationPushkey).child("status");
@@ -123,7 +125,7 @@ public class LiveLocationService extends Service {
         };
 
         //will stop the scan after 10min, will update the users log accordingly
-        handler.postDelayed(runnable, 600000);
+        handler.postDelayed(runnable, 6000000);
 
 
         return super.onStartCommand(intent, flags, startId);
@@ -136,7 +138,7 @@ public class LiveLocationService extends Service {
 
         PendingIntent contentIntent = PendingIntent.getActivity(getBaseContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getBaseContext(),"SIN")
-                .setContentTitle("SIN - Dynamic Navigation")
+                .setContentTitle("SIN - Live Location Share")
                 .setContentText(message)
                 .setSmallIcon(R.drawable.sinicon)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)

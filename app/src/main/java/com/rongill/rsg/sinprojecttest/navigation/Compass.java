@@ -6,6 +6,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -18,6 +19,7 @@ public class Compass implements SensorEventListener, Serializable {
     private float azimuth =0f;
     private float currentAzimuth =0f;
     private int oriantationNew;
+    public ImageView stopNavBtn;
 
     public SensorManager mSensorManager;
     public TextView userLocationTv, titleTv;
@@ -25,9 +27,11 @@ public class Compass implements SensorEventListener, Serializable {
 
     public Compass(){
     }
-    public Compass(ImageView compassImage, SensorManager activitySensorManager ){
+    public Compass(ImageView compassImage,ImageView stopNavBtn, SensorManager activitySensorManager ){
         this.compassImage = compassImage;
         mSensorManager = activitySensorManager;
+        this.stopNavBtn = stopNavBtn;
+
 
     }
 

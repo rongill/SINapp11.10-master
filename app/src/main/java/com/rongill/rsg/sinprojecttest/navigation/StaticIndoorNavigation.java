@@ -10,6 +10,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
+import android.view.View;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -52,6 +53,7 @@ public class StaticIndoorNavigation extends IndoorNavigation {
                 .child("status");
 
         hasArrived = true;
+        compass.stopNavBtn.setVisibility(View.INVISIBLE);
         compass.compassImage.setRotation(90);
         compass.titleTv.setText("click image to scan your location");
         compass.compassImage.setClickable(true);

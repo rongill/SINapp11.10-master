@@ -34,6 +34,7 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -171,8 +172,9 @@ public class SinMainActivity extends AppCompatActivity implements SensorEventLis
             //compass image view
             //init compass vars for nav view
             ImageView compassImage = (ImageView) findViewById(R.id.compass_image);
+            ImageView stopNavBtn = (ImageView)findViewById(R.id.stop_nav_btn);
             mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-            compass = new Compass(compassImage, mSensorManager);
+            compass = new Compass(compassImage, stopNavBtn, mSensorManager);
 
             final TextView mainPageTitleTv = (TextView)findViewById(R.id.action_display_view);
             final TextView userLocationTv = (TextView) findViewById(R.id.user_location_TV);
@@ -191,11 +193,15 @@ public class SinMainActivity extends AppCompatActivity implements SensorEventLis
                     if(userIsSet) {
                         setUserInbox();
                         setFriendAdapter();
+                        userIsSet = false;
                     }
+
+
                     //if the scanner was able to scan SIN project beacons, set the TextView.
                     if (myBleScanner.getNearestBeacon().getRssi() > -150) {
 
-                        mUserUtil.getCurrentUser().setCurrentBeacon(myBleScanner.getNearestBeaconFromList());
+                        //TODO BIG BUG! some reason not getting a beacon with no structure or any db data on it.
+                        mUserUtil.getCurrentUser().setCurrentBeacon(myBleScanner.getNearestBeacon());
 
                         userLocationTv.setText("Hello " + mUserUtil.getCurrentUser().getUsername() + "!\n your location:");
                         structureMainTv.setText("Structure- " + mUserUtil.getCurrentUser().getCurrentBeacon().getStructure());
@@ -252,6 +258,7 @@ public class SinMainActivity extends AppCompatActivity implements SensorEventLis
                 @Override
                 public void onClick(View v) {
 
+                    //TODO maybe problem here
                     mUserUtil.getCurrentUser().setCurrentBeacon(new MyBeacon());
                     myBleScanner.getScannedDeviceList().clear();
                     myBleScanner.getNearestBeacon().setRssi(-150);
@@ -291,7 +298,7 @@ public class SinMainActivity extends AppCompatActivity implements SensorEventLis
         final MenuItem maintenanceItem = menu.findItem(R.id.maintenance_settings);
         final MenuItem managementItem = menu.findItem(R.id.management_settings);
 
-        //set the maintenance menu item visibility if user is a maintenance user.
+        //set the maintenance/management menu item visibility if user is a maintenance/management user.
         if (mAuth.getCurrentUser() != null) {
             DatabaseReference userRef = FirebaseDatabase.getInstance().getReference()
                     .child("users").child(mAuth.getUid()).child("user-type");
@@ -418,6 +425,7 @@ public class SinMainActivity extends AppCompatActivity implements SensorEventLis
         if(staticIndoorNavigation != null && !staticIndoorNavigation.hasArrived){
             staticIndoorNavigation.stopNavigation("stopped");
         } // TODO make the same condition on dynamic nav
+
     }
 
     public void signOut() {
@@ -746,11 +754,9 @@ public class SinMainActivity extends AppCompatActivity implements SensorEventLis
 
                     final Location destination = (Location) extras.getSerializable("LOCATION");
 
-                    final ImageView stopNavBtn = (ImageView)findViewById(R.id.stop_nav_btn);
-                    stopNavBtn.setVisibility(View.VISIBLE);
+                    //final ImageView stopNavBtn = (ImageView)findViewById(R.id.stop_nav_btn);
+                    compass.stopNavBtn.setVisibility(View.VISIBLE);
 
-
-                    //TODO add all TV's to the compass
                     compass.titleTv = (TextView) findViewById(R.id.action_display_view);
                     compass.setUserLocationTv((TextView) findViewById(R.id.user_location_TV));
 
@@ -777,11 +783,11 @@ public class SinMainActivity extends AppCompatActivity implements SensorEventLis
                             staticIndoorNavigation.startNavigation();
                             Log.i(TAG, "Static navigation started");
 
-                            stopNavBtn.setOnClickListener(new View.OnClickListener() {
+                            compass.stopNavBtn.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
                                     staticIndoorNavigation.stopNavigation("stopped by user");
-                                    stopNavBtn.setVisibility(View.INVISIBLE);
+                                    compass.stopNavBtn.setVisibility(View.INVISIBLE);
                                     makeToast("Navigation stopped");
                                 }
                             });
@@ -815,6 +821,7 @@ public class SinMainActivity extends AppCompatActivity implements SensorEventLis
                             //if message not to old, deleted by friend or older the 15m
                             if (dateStarted.timeDiffInSeconds(new MyCalendar()) < 900) {
                                 if (dataSnapshot.child("requestStatus").getValue().toString().contains("confirmed")) {
+
 
                                     String friendNavLogPushKey = dataSnapshot.child("requestStatus").getValue().toString().substring(10);
 

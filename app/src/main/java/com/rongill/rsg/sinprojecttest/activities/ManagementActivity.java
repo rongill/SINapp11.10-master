@@ -99,7 +99,7 @@ public class ManagementActivity extends AppCompatActivity {
         managementUser = new ManagementUser(
                 tempUser.getUserId(), tempUser.getUsername(),
                 tempUser.getStatus(), tempUser.getUserType(), "");
-
+        //read management user information using his user key on the "management-users" table.
         DatabaseReference managementUserRef = FirebaseDatabase.getInstance().getReference()
                 .child("management-users").child(managementUser.getUserId());
         managementUserRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -174,8 +174,9 @@ public class ManagementActivity extends AppCompatActivity {
                         //If user exist
                         if(dataSnapshot.exists()) {
                             for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                                //if already a maintenance user, ,ake toast.
-                                if (ds.child("user-type").toString().equals("maintenance") || ds.child("user-type").toString().equals("management"))
+                                //if already a maintenance or management user, make toast "invalid user".
+                                if (ds.child("user-type").toString().equals("maintenance") || ds.child("user-type").toString()
+                                        .equals("management"))
                                     makeToast("Invalid user!");
                                 else {
                                     //if not, open a new maintenance user input in the maintenance-users tree with the structure assigned value.
@@ -188,7 +189,8 @@ public class ManagementActivity extends AppCompatActivity {
                                     userRef.child(ds.getKey()).child("user-type").setValue("maintenance");
                                     userRef.child(ds.getKey()).child("structure-related").setValue(managementUser.getStructure());
 
-                                    makeToast(ds.child("username").getValue().toString() + " has been assigned to " + managementUser.getStructure() + " successfully!");
+                                    makeToast(ds.child("username").getValue().toString() + " has been assigned to " +
+                                            managementUser.getStructure() + " successfully!");
                                     makeToast("Will refresh at next entry.");
                                 }
                             }
@@ -243,7 +245,8 @@ public class ManagementActivity extends AppCompatActivity {
 
                     String pushKey = structureNotificationsRef.push().getKey();
                     structureNotificationsRef.child(pushKey).child("message").setValue(input.getText().toString());
-                    structureNotificationsRef.child(pushKey).child("date-posted").setValue(new MyCalendar()).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    structureNotificationsRef.child(pushKey).child("date-posted").setValue(new MyCalendar())
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if(task.isSuccessful())

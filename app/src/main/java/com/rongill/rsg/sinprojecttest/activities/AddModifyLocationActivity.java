@@ -67,14 +67,15 @@ public class AddModifyLocationActivity extends Activity {
                     if(getIntent().getSerializableExtra("LOCATION_MODIFY") != null){
                         final Location locationModifier = (Location)getIntent().getSerializableExtra("LOCATION_MODIFY");
                         Query query = FirebaseDatabase.getInstance().getReference()
-                                .child("structures").child(locationModifier.getStructure()).child("locations").orderByChild("name").equalTo(locationModifier.getName());
+                                .child("structures").child(locationModifier.getStructure()).child("locations")
+                                .orderByChild("name").equalTo(locationModifier.getName());
                         query.addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                 for (DataSnapshot ds : dataSnapshot.getChildren()){
                                     DatabaseReference locationToModifyRef = FirebaseDatabase.getInstance().getReference()
-                                            .child("structures").child(locationModifier.getStructure()).child("locations").child(ds.getKey());
-
+                                            .child("structures").child(locationModifier.getStructure()).child("locations")
+                                            .child(ds.getKey());
 
                                     locationToModifyRef.child("beacon").setValue(beaconEt.getText().toString());
                                     locationToModifyRef.child("category").setValue(locationCategoryEt.getText().toString());
@@ -82,7 +83,6 @@ public class AddModifyLocationActivity extends Activity {
                                     locationToModifyRef.child("x").setValue(xAxisEt.getText().toString());
                                     locationToModifyRef.child("y").setValue(yAxisEt.getText().toString());
                                     locationToModifyRef.child("floor").setValue(floorEt.getText().toString());
-
                                     locationToModifyRef.child("date-modified").setValue(new MyCalendar());
                                 }
                             }

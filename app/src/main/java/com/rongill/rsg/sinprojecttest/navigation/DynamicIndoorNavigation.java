@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
+import android.view.View;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -25,7 +26,7 @@ public class DynamicIndoorNavigation {
 
     private final String TAG = "DynamicNavService";
     private Location destination;
-    private Compass compass;
+    private final Compass compass;
     private User currentUser;
     private boolean navigationStarted = false;
     private String logKey;
@@ -42,6 +43,15 @@ public class DynamicIndoorNavigation {
 
         utilizeSharingToken(navRequestMessage.getSenderUid());
         initDestination(navRequestMessage.getSenderUid());
+        //TODO check the stop btn
+        compass.stopNavBtn.setVisibility(View.VISIBLE);
+        compass.stopNavBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                staticIndoorNavigation.stopNavigation("stopped by user");
+                DynamicIndoorNavigation.this.compass.stopNavBtn.setVisibility(View.INVISIBLE);
+            }
+        });
     }
 
     private void initDestination(String friendUserId) {

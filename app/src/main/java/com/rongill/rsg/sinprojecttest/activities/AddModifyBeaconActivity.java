@@ -69,7 +69,7 @@ public class AddModifyBeaconActivity extends AppCompatActivity {
                                 for(DataSnapshot ds : dataSnapshot.getChildren()){
                                     DatabaseReference beaconToModifyRef = FirebaseDatabase.getInstance().getReference()
                                             .child("beacons").child(ds.getKey());
-                                    beaconToModifyRef.child("name").setValue("SIN/" + beaconNameEt.getText().toString());
+                                    beaconToModifyRef.child("name").setValue(beaconNameEt.getText().toString());
                                     beaconToModifyRef.child("floor").setValue(beaconFloorEt.getText().toString());
                                     beaconToModifyRef.child("x").setValue(beaconXEt.getText().toString());
                                     beaconToModifyRef.child("y").setValue(beaconYEt.getText().toString());

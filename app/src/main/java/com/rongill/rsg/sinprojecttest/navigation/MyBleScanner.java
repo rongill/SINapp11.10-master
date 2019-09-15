@@ -131,9 +131,9 @@ public class MyBleScanner {
                     getScannedDeviceList().add(scannedBeacon);
                 }
 
-                if(!scannedBeacon.getName().equals(nearestBeacon.getName())){
+              //  if(!scannedBeacon.getName().equals(nearestBeacon.getName())){
                     setNearestBeacon(scannedBeacon);
-                }
+               // }
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {}
